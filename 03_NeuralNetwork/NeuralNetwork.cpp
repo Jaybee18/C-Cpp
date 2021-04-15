@@ -67,5 +67,6 @@ int main()
 {
     Neuron n = Neuron(5);
     n.show();
+    std::cout << "penis";
     return 0;
 }
