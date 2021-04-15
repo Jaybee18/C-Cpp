@@ -1,5 +1,7 @@
 #include <iostream>
+#include <list>
 #include <random>
+#include "plist.h"
 
 float randomFloat()
 {
@@ -13,8 +15,8 @@ class Neuron
 {
 public:
     float bias;
-    float *weights;
-    float weight[3];
+    std::list<float> weights;
+    plist a;
     int inputs;
 
     Neuron(int pInputs)
@@ -22,13 +24,10 @@ public:
         bias = randomFloat();
         inputs = pInputs;
 
-        float temp[pInputs];
         for (int i = 0; i < pInputs; i++)
         {
-            temp[i] = randomFloat();
+            weights.push_front(randomFloat());
         }
-        weights = temp;
-        std::cout << weights[4] << std::endl;
     }
 
     void show()
@@ -37,7 +36,7 @@ public:
         std::cout << "Weights :" << std::endl;
         for (int i = 0; i < inputs; i++)
         {
-            std::cout << i << " : " << weights[i] << std::endl;
+            std::cout << i << " : " << weights. << std::endl;
         }
         std::cout << "Bias : " << bias << std::endl;
         std::cout << "---------------" << std::endl;
@@ -67,6 +66,5 @@ int main()
 {
     Neuron n = Neuron(5);
     n.show();
-    std::cout << "penis";
     return 0;
 }
