@@ -1,32 +1,40 @@
 #include <iostream>
-#include <list>
-#include <random>
-#include "plist.h"
+#include <cstdlib>
+#include <ctime>
+#include <vector>
 
 float randomFloat()
 {
     // yoinked from da net
-    std::default_random_engine e;
-    std::uniform_real_distribution<> dist(0, 1);
-    return dist(e);
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX + 1);
 }
 
 class Neuron
 {
 public:
     float bias;
-    std::list<float> weights;
-    plist a;
-    int inputs;
+    std::vector<float> weights;
+    int numberOfInputs;
+    float *activationFunc;
 
-    Neuron(int pInputs)
+    Neuron(int pInputs, float &pActivationFunc)
     {
         bias = randomFloat();
-        inputs = pInputs;
+        numberOfInputs = pInputs;
+        activationFunc = pActivationFunc;
 
         for (int i = 0; i < pInputs; i++)
         {
-            weights.push_front(randomFloat());
+            weights.push_back(randomFloat());
+        }
+    }
+
+    float forwardPass(float inputs[])
+    {
+        int netin = 0;
+        for (int i = 0; i < numberOfInputs; i++)
+        {
+            netin += inputs[i];
         }
     }
 
@@ -34,9 +42,9 @@ public:
     {
         std::cout << "---------------" << std::endl;
         std::cout << "Weights :" << std::endl;
-        for (int i = 0; i < inputs; i++)
+        for (int i = 0; i < numberOfInputs; i++)
         {
-            std::cout << i << " : " << weights. << std::endl;
+            std::cout << i << " : " << weights[i] << std::endl;
         }
         std::cout << "Bias : " << bias << std::endl;
         std::cout << "---------------" << std::endl;
@@ -62,9 +70,15 @@ public:
     }
 };
 
+float sigmoid(float x)
+{
+    return 1 / (1 + exp(x));
+}
+
 int main()
 {
-    Neuron n = Neuron(5);
+    srand(static_cast<unsigned>(time(NULL)));
+    Neuron n = Neuron(5, &sigmoid);
     n.show();
     return 0;
 }
