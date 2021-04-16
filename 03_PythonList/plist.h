@@ -36,6 +36,14 @@ public:
         current = *(current.next);
     }
 
+    contentType get(int index){
+        toFirst();
+        for(int i = 0; i < index; i++){
+            next();
+        }
+        return current.value;
+    }
+
     void append(contentType object)
     {
         if (first.isEmpty)
