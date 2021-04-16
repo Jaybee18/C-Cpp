@@ -54,10 +54,9 @@ public:
     void remove(contentType value)
     {
         node<contentType> *current = first;
-        while(current->next != NULL && current->next->value != value){
+        while(current->next->value != value && current->next != NULL){
             current = current->next;
         }
-        std::cout << current->value << std::endl;
         if(current->next == NULL){
             return;
         }

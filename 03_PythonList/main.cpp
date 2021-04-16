@@ -3,12 +3,12 @@
 
 int main()
 {
-    list<float> a;
-    a.append(0.01f);
-    a.append(0.02f);
-    a.append(0.03f);
+    list<int> a; // float has problems for some reason
+    a.append(1);
+    a.append(2);
+    a.append(3);
     a.print();
-    a.remove(0.2f);
+    a.remove(2);
     a.print();
     return 0;
 }

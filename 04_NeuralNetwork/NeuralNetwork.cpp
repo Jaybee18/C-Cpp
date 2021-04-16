@@ -2,6 +2,12 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <math.h>
+
+float sigmoid(float x)
+{
+    return 1 / (1 + exp(x));
+}
 
 float randomFloat()
 {
@@ -11,17 +17,17 @@ float randomFloat()
 
 class Neuron
 {
-public:
+private:
     float bias;
     std::vector<float> weights;
     int numberOfInputs;
-    float *activationFunc;
+    float lastNetIn;
 
-    Neuron(int pInputs, float &pActivationFunc)
+public:
+    Neuron(int pInputs)
     {
         bias = randomFloat();
         numberOfInputs = pInputs;
-        activationFunc = pActivationFunc;
 
         for (int i = 0; i < pInputs; i++)
         {
@@ -31,11 +37,28 @@ public:
 
     float forwardPass(float inputs[])
     {
-        int netin = 0;
+        float netin = 0;
         for (int i = 0; i < numberOfInputs; i++)
         {
-            netin += inputs[i];
+            netin += inputs[i] * weights[i];
         }
+        lastNetIn = netin;
+        return sigmoid(netin);
+    }
+
+    float getWeightAtIndex(int index)
+    {
+        return weights[index];
+    }
+
+    void adjustWeightAtIndex(int index, float delta)
+    {
+        weights[index] -= delta;
+    }
+
+    void adjustBiasWeight(float delta)
+    {
+        bias -= delta;
     }
 
     void show()
@@ -53,9 +76,23 @@ public:
 
 class NetworkLayer
 {
+private:
+    std::vector<Neuron> neurons;
+    int numberOfInputs;
+    int numberOfNeurons;
+    float lastInputs[];
 public:
-    NetworkLayer()
+    NetworkLayer(int pNumberOfInputs, int pNumberOfNeurons)
     {
+        numberOfInputs = pNumberOfInputs;
+        numberOfNeurons = pNumberOfNeurons;
+        for(int i = 0; i < pNumberOfInputs; i++){
+            neurons.push_back(Neuron(numberOfInputs));
+        }
+    }
+
+    float forwardPass(float inputs[]){
+
     }
 };
 
@@ -70,15 +107,15 @@ public:
     }
 };
 
-float sigmoid(float x)
-{
-    return 1 / (1 + exp(x));
-}
-
 int main()
 {
     srand(static_cast<unsigned>(time(NULL)));
-    Neuron n = Neuron(5, &sigmoid);
+
+    Neuron n = Neuron(2);
     n.show();
+
+    float inputs[2] = {1.0f, 0.0f};
+    std::cout << n.forwardPass(inputs) << std::endl;
+
     return 0;
 }
