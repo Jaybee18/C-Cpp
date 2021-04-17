@@ -4,11 +4,6 @@
 #include <vector>
 #include <math.h>
 
-float sigmoid(float x)
-{
-    return 1 / (1 + exp(x));
-}
-
 float randomFloat()
 {
     // yoinked from da net
@@ -80,19 +75,28 @@ private:
     std::vector<Neuron> neurons;
     int numberOfInputs;
     int numberOfNeurons;
-    float lastInputs[];
+    float *lastInputs;
+
 public:
     NetworkLayer(int pNumberOfInputs, int pNumberOfNeurons)
     {
         numberOfInputs = pNumberOfInputs;
         numberOfNeurons = pNumberOfNeurons;
-        for(int i = 0; i < pNumberOfInputs; i++){
+        for (int i = 0; i < pNumberOfInputs; i++)
+        {
             neurons.push_back(Neuron(numberOfInputs));
         }
     }
 
-    float forwardPass(float inputs[]){
-
+    std::vector<float> forwardPass(float inputs[])
+    {
+        std::vector<float> outputs;
+        for (int i = 0; i < numberOfNeurons; i++)
+        {
+            outputs.push_back(neurons[i].forwardPass(inputs));
+        }
+        lastInputs = inputs;
+        return outputs;
     }
 };
 
@@ -112,10 +116,13 @@ int main()
     srand(static_cast<unsigned>(time(NULL)));
 
     Neuron n = Neuron(2);
+    NetworkLayer l = NetworkLayer(2, 2);
     n.show();
 
     float inputs[2] = {1.0f, 0.0f};
-    std::cout << n.forwardPass(inputs) << std::endl;
-
+    std::vector<float> outputs = l.forwardPass(inputs);
+    for(int i = 0; i < outputs.size(); i++){
+        std::cout << outputs[i] << std::endl;
+    }
     return 0;
 }
