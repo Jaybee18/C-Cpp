@@ -1,19 +1,21 @@
 #include "Layer.h"
+#include <iostream>
+
+using namespace std;
 
 class NeuralNetwork
 {
 private:
-    std::vector<Layer> layers;
-    int penis;
+    vector<Layer> layers;
 
 public:
-    NeuralNetwork(int noLayers, std::vector<int> noNeurons, int noInputs);
-    std::vector<double> forwardPass(std::vector<double> input);
-    void train(std::vector<double> input, std::vector<double> output, int iterations);
+    NeuralNetwork(int noLayers, vector<int> noNeurons, int noInputs);
+    vector<double> forwardPass(vector<double> input);
+    void train(vector<double> input, vector<double> output, int iterations);
     ~NeuralNetwork();
 };
 
-NeuralNetwork::NeuralNetwork(int noLayers, std::vector<int> noNeurons, int noInputs)
+NeuralNetwork::NeuralNetwork(int noLayers, vector<int> noNeurons, int noInputs)
 {
     int lastOutputs = noInputs;
     for (int i = 0; i < noLayers; i++)
@@ -24,9 +26,9 @@ NeuralNetwork::NeuralNetwork(int noLayers, std::vector<int> noNeurons, int noInp
     }
 }
 
-std::vector<double> NeuralNetwork::forwardPass(std::vector<double> input)
+vector<double> NeuralNetwork::forwardPass(vector<double> input)
 {
-    std::vector<double> outputsOfLastLayer = input;
+    vector<double> outputsOfLastLayer = input;
     for (int i = 0; i < input.size(); i++)
     {
         outputsOfLastLayer = layers[i].forwardPass(outputsOfLastLayer);
@@ -34,14 +36,48 @@ std::vector<double> NeuralNetwork::forwardPass(std::vector<double> input)
     return outputsOfLastLayer;
 }
 
-void NeuralNetwork::train(std::vector<double> input, std::vector<double> output, int iterations)
+void NeuralNetwork::train(vector<double> input, vector<double> output, int iterations)
 {
-    std::vector<std::vector<double>> outputs = {input};
     for (int iteration = 0; iteration < iterations; iteration++)
     {
         // forward pass
-        outputs.push_back
+        vector<vector<double>> outputs;
+        vector<double> lastOutput = input;
+        for (int i = 0; i < layers.size(); i++)
+        {
+            vector<double> tempOutput = layers[i].forwardPass(input);
+            outputs.push_back(tempOutput);
+            lastOutput = tempOutput;
+        }
+
+        // backpropagation
+        /* calculate the mse wrt each of the activations */
+        vector<double> error = layers[layers.size() - 1].calcError(output);
+
+        /* calculate weight deltas based on error */
+        vector<double> lastGradient = error;
+        for (Layer layer : layers)
+        {
+            /*
+             * It has to be calculated ∂e/∂w for each neuron in each layer                                                      ∑
+             * ∂e/∂w = ∂e/∂a * ∂a/∂z * ∂z/∂w
+             *           ||   |____________|
+             *           ||         \/
+             * the neuron itself has these variables, so they don't need to be passed
+             *           ||
+             *           \/
+             * has to be passed bc it contains the error
+             */
+            layer.calcWeightDeltas(lastGradient);               // ∂e/∂w
+            lastGradient = layer.calcGradients(lastGradient);   // ∂e/∂a
+        }
+
+        /* update all the weights */
+        for(Layer layer : layers){
+            //layer.updateWeights();
+        }
     }
+}
 
 NeuralNetwork::~NeuralNetwork()
 {
