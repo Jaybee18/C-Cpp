@@ -1,6 +1,8 @@
 #include "plist.h"
 #include <vector>
 
+// todo dont implement remove by value method
+
 int main()
 {
     list<float> a;

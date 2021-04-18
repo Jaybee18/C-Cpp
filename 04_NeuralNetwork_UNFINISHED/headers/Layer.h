@@ -14,6 +14,8 @@ public:
     vector<double> calcError(vector<double> expectedOutput);
     void calcWeightDeltas(vector<double> gradient);
     vector<double> calcGradients(vector<double> gradient);
+    void updateWeights();
+    void show();
     ~Layer();
 };
 
@@ -28,7 +30,7 @@ Layer::Layer(int noNeurons, int noInputs)
 vector<double> Layer::forwardPass(vector<double> input)
 {
     vector<double> output;
-    for (int i = 0; i < input.size(); i++)
+    for (int i = 0; i < neurons.size(); i++)
     {
         output.push_back(neurons[i].forwardPass(input));
     }
@@ -38,10 +40,12 @@ vector<double> Layer::forwardPass(vector<double> input)
 
 vector<double> Layer::calcError(vector<double> expectedOutputs)
 {
+    // most likely correct
     vector<double> error;
     for (int i = 0; i < expectedOutputs.size(); i++)
     {
-        error.push_back(-2 * (expectedOutputs[i] - lastOutputs[i]));
+        double temp = -2 * (expectedOutputs[i] - lastOutputs[i]);
+        error.push_back(temp);
     }
     return error;
 }
@@ -56,9 +60,39 @@ void Layer::calcWeightDeltas(vector<double> gradient)
 
 vector<double> Layer::calcGradients(vector<double> gradient)
 {
+    // @param gradient -> ∂e/∂a_thisLayer
+    // @return gradient -> ∂e/∂a_beforeLayer
+    vector<vector<double>> gradients;
+    for (Neuron neuron : neurons)
+    {
+        gradients.push_back(neuron.calcGradient(gradient));
+    }
     vector<double> res;
-    for(int i = 0; i < neurons.size(); i++){
-        res.push_back(neurons[i].calcGradient(gradient));
+    for (int i = 0; i < gradients[0].size(); i++)
+    {
+        double temp = 0.0;
+        for (vector<double> grad : gradients)
+        {
+            temp += grad[i];
+        }
+        res.push_back(temp);
+    }
+    return res;
+}
+
+void Layer::updateWeights()
+{
+    for (Neuron n : neurons)
+    {
+        n.updateWeights();
+    }
+}
+
+void Layer::show()
+{
+    for (Neuron n : neurons)
+    {
+        n.show();
     }
 }
 

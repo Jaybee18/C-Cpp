@@ -12,6 +12,7 @@ public:
     NeuralNetwork(int noLayers, vector<int> noNeurons, int noInputs);
     vector<double> forwardPass(vector<double> input);
     void train(vector<double> input, vector<double> output, int iterations);
+    void show();
     ~NeuralNetwork();
 };
 
@@ -28,18 +29,17 @@ NeuralNetwork::NeuralNetwork(int noLayers, vector<int> noNeurons, int noInputs)
 
 vector<double> NeuralNetwork::forwardPass(vector<double> input)
 {
-    vector<double> outputsOfLastLayer = input;
-    for (int i = 0; i < input.size(); i++)
-    {
-        outputsOfLastLayer = layers[i].forwardPass(outputsOfLastLayer);
-    }
-    return outputsOfLastLayer;
+    vector<double> outputs_lastLayer = input;
+    for (int i = 0; i < layers.size(); i++)
+        outputs_lastLayer = layers[i].forwardPass(outputs_lastLayer);
+    return outputs_lastLayer;
 }
 
 void NeuralNetwork::train(vector<double> input, vector<double> output, int iterations)
 {
     for (int iteration = 0; iteration < iterations; iteration++)
     {
+        show();
         // forward pass
         vector<vector<double>> outputs;
         vector<double> lastOutput = input;
@@ -53,29 +53,21 @@ void NeuralNetwork::train(vector<double> input, vector<double> output, int itera
         // backpropagation
         /* calculate the mse wrt each of the activations */
         vector<double> error = layers[layers.size() - 1].calcError(output);
+        //std::cout << error[0] << std::endl;
 
-        /* calculate weight deltas based on error */
-        vector<double> lastGradient = error;
-        for (Layer layer : layers)
-        {
-            /*
-             * It has to be calculated ∂e/∂w for each neuron in each layer                                                      ∑
-             * ∂e/∂w = ∂e/∂a * ∂a/∂z * ∂z/∂w
-             *           ||   |____________|
-             *           ||         \/
-             * the neuron itself has these variables, so they don't need to be passed
-             *           ||
-             *           \/
-             * has to be passed bc it contains the error
-             */
-            layer.calcWeightDeltas(lastGradient);               // ∂e/∂w
-            lastGradient = layer.calcGradients(lastGradient);   // ∂e/∂a
-        }
+        layers[layers.size() - 1].calcWeightDeltas({1.0});
 
-        /* update all the weights */
-        for(Layer layer : layers){
-            //layer.updateWeights();
-        }
+        layers[layers.size() - 1].updateWeights();
+
+        show();
+    }
+}
+
+void NeuralNetwork::show()
+{
+    for (Layer l : layers)
+    {
+        l.show();
     }
 }
 
