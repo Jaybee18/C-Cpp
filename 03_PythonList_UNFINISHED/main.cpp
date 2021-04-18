@@ -12,7 +12,7 @@ int main()
     a.append(4);
     a.append(5);
     a.print();
-    a.rotate(5);
+    a.reverse();
     a.print();
     std::cout << a.pop(1) << std::endl;
     a.print();
