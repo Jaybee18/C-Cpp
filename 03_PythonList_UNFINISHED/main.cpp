@@ -9,8 +9,12 @@ int main()
     a.append(1);
     a.append(2);
     a.append(3);
+    a.append(4);
+    a.append(5);
     a.print();
-    a.remove(2);
+    a.rotate(5);
+    a.print();
+    std::cout << a.pop(1) << std::endl;
     a.print();
     return 0;
 }
