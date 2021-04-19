@@ -2,7 +2,7 @@
 #include <iostream>
 
 /* todo:
- * - sort
+ * - sort?
  * - 
  * 
  */
@@ -39,6 +39,17 @@ public:
         _length = 0;
     }
 
+    /* constructor for list initialization at declaration */
+    list(std::initializer_list<contentType> initList)
+    {
+        first = NULL;
+        last = NULL;
+        _length = 0;
+
+        for (auto element : initList)
+            append(element);
+    }
+
     void append(contentType value)
     {
         node<contentType> *temp = new node<contentType>;
@@ -65,13 +76,15 @@ public:
             throw std::invalid_argument("Index out of range");
         node<contentType> *newObject = new node<contentType>;
         newObject->value = value;
-        if(index == 0){
+        if (index == 0)
+        {
             newObject->next = first;
             first = newObject;
             _length++;
             return;
         }
-        if(index == _length){
+        if (index == _length)
+        {
             newObject->next = NULL;
             last->next = newObject;
             last = newObject;

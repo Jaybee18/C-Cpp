@@ -3,7 +3,7 @@
 
 int main()
 {
-    list<float> a;
+    list<float> a = {1, 2, 3};
     a.append(1);
     a.append(2);
     a.append(3);
@@ -24,5 +24,7 @@ int main()
     a.print();
     a.insert(1, 13);
     a.print();
+    list<int> test = {1, 2, 3};
+    test.print();
     return 0;
 }
