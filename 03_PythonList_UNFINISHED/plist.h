@@ -2,8 +2,8 @@
 #include <iostream>
 
 /* todo:
- * - implement a sort of range function
- * 
+ * - tjust
+ * - ljust
  * 
  */
 
@@ -112,14 +112,15 @@ public:
         list<contentType> res;
         node<contentType> *current = first;
         for(int i = 0; i < _length; i++){
-            if(i > endIndex)
+            if(i >= endIndex)
                 return res;
             if(i < startIndex)
                 current = current->next;
             res.append(current->value);
             current = current->next;
         }
-        
+        current = NULL;
+        return res;
     }
 
     int length()
@@ -134,6 +135,8 @@ public:
         {
             current = current->next;
         }
+        if(index == -1)
+            current = last;
         return current->value;
     }
 

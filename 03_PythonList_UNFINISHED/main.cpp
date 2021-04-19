@@ -16,5 +16,8 @@ int main()
     a.print();
     std::cout << a.pop(1) << std::endl;
     a.print();
+    list<float> temp = a.getRange(1, 3);
+    temp.print();
+    
     return 0;
 }
