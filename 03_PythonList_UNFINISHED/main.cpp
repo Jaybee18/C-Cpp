@@ -1,8 +1,6 @@
 #include "plist.h"
 #include <vector>
 
-// todo dont implement remove by value method
-
 int main()
 {
     list<float> a;
@@ -18,6 +16,13 @@ int main()
     a.print();
     list<float> temp = a.getRange(1, 3);
     temp.print();
-    
+    temp.ljust(6, 0);
+    temp.print();
+    temp.rjust(9, 1);
+    temp.print();
+    a.extend(&temp);
+    a.print();
+    a.insert(1, 13);
+    a.print();
     return 0;
 }
