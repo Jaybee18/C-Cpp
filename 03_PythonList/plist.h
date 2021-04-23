@@ -2,8 +2,8 @@
 #include <iostream>
 
 /* todo:
- * - implement a sort of range function
- * 
+ * - sort?
+ * - 
  * 
  */
 
@@ -39,6 +39,17 @@ public:
         _length = 0;
     }
 
+    /* constructor for list initialization at declaration */
+    list(std::initializer_list<contentType> initList)
+    {
+        first = NULL;
+        last = NULL;
+        _length = 0;
+
+        for (auto element : initList)
+            append(element);
+    }
+
     void append(contentType value)
     {
         node<contentType> *temp = new node<contentType>;
@@ -55,6 +66,38 @@ public:
             last = temp;
         }
         temp = NULL;
+        _length++;
+    }
+
+    // todo : rework, this is bad
+    void insert(contentType value, int index)
+    {
+        if (index > _length)
+            throw std::invalid_argument("Index out of range");
+        node<contentType> *newObject = new node<contentType>;
+        newObject->value = value;
+        if (index == 0)
+        {
+            newObject->next = first;
+            first = newObject;
+            _length++;
+            return;
+        }
+        if (index == _length)
+        {
+            newObject->next = NULL;
+            last->next = newObject;
+            last = newObject;
+            _length++;
+            return;
+        }
+        node<contentType> *current = first;
+        for (int i = 0; i < index - 1; i++)
+            current = current->next;
+
+        newObject->next = current->next;
+        current->next = newObject;
+
         _length++;
     }
 
@@ -111,15 +154,57 @@ public:
     {
         list<contentType> res;
         node<contentType> *current = first;
-        for(int i = 0; i < _length; i++){
-            if(i > endIndex)
+        for (int i = 0; i < _length; i++)
+        {
+            if (i >= endIndex)
                 return res;
-            if(i < startIndex)
+            if (i < startIndex)
                 current = current->next;
             res.append(current->value);
             current = current->next;
         }
-        
+        current = NULL;
+        return res;
+    }
+
+    void ljust(int newLength, contentType filling)
+    {
+        for (int i = 0; i < newLength - _length; i++)
+        {
+            node<contentType> *newNode = new node<contentType>;
+            newNode->value = filling;
+            newNode->next = NULL;
+            last->next = newNode;
+            last = newNode;
+        }
+        _length += newLength - _length;
+    }
+
+    void rjust(int newLength, contentType filling)
+    {
+        for (int i = 0; i < newLength - _length; i++)
+        {
+            node<contentType> *newNode = new node<contentType>;
+            newNode->value = filling;
+            newNode->next = first;
+            first = newNode;
+        }
+        _length += newLength - _length;
+    }
+
+    void extend(list<contentType> *pList)
+    {
+        for (int i = 0; i < pList->length(); i++)
+        {
+            append((*pList)[i]);
+        }
+    }
+
+    void clear()
+    {
+        first = NULL;
+        last = NULL;
+        _length = 0;
     }
 
     int length()
@@ -134,6 +219,8 @@ public:
         {
             current = current->next;
         }
+        if (index == -1)
+            current = last;
         return current->value;
     }
 
