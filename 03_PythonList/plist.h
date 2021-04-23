@@ -196,7 +196,7 @@ public:
     {
         for (int i = 0; i < pList->length(); i++)
         {
-            append((*pList)[i]);
+            append((*pList)[i]->value);
         }
     }
 
@@ -212,7 +212,7 @@ public:
         return _length;
     }
 
-    contentType operator[](int index)
+    node<contentType> *operator[](int index)
     {
         node<contentType> *current = first;
         for (int i = 0; i < index; i++)
@@ -221,7 +221,7 @@ public:
         }
         if (index == -1)
             current = last;
-        return current->value;
+        return current;
     }
 
     void print()

@@ -4,6 +4,7 @@
 int main()
 {
     list<float> a = {1, 2, 3};
+    a[1]->value = 3;
     a.append(1);
     a.append(2);
     a.append(3);
