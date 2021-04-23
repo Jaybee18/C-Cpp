@@ -1,10 +1,14 @@
-// Programmer: Mihalis Tsoukalos
-// Date: Wednesday 04 June 2014
-//
-// A simple OpenGL program that draws a triangle.
-
-#include "GL/freeglut.h"
+#ifdef _WIN32
+    #include "C:\MinGW\include\GL\freeglut.h"
+#else
+    #include "gl/freeglut.h"
+#endif
 #include "GL/gl.h"
+
+/* compiling
+ * linux   : g++ 05_opengl/main.cpp -lglut -lGL -o 05_opengl/main; ./05_opengl/main
+ * windows : g++ 05_opengl/main.cpp -o 05_opengl/main.exe -I"C:\MinGW\include" -L"C:\MinGW\lib" -lfreeglut -lopengl32 && 05_opengl\main.exe
+ */
 
 void drawTriangle()
 {
