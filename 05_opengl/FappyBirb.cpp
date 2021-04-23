@@ -1,7 +1,12 @@
+/* compiling
+ * linux   : g++ 05_opengl/FappyBirb.cpp -lglut -lGL -o 05_opengl/FappyBirb; ./05_opengl/FappyBirb
+ * windows : g++ 05_opengl/main.cpp -o 05_opengl/main.exe -I"C:\MinGW\include" -L"C:\MinGW\lib" -lfreeglut -lopengl32 && 05_opengl\main.exe
+ */
+
 #ifdef _WIN32
 #include "C:\MinGW\include\GL\freeglut.h"
 #else
-#include "gl/freeglut.h"
+#include "GL/freeglut.h"
 #endif
 #include "GL/gl.h"
 #include <math.h>
@@ -10,8 +15,9 @@
 
 #define drawOneLine(x1, y1, x2, y2) \
     glBegin(GL_LINES);              \
-    glVertex3f((x1), (y1), (-5.0)); \
-    glVertex3f((x2), (y2), (-5.0)); \
+    glColor3f(1, 0, 0);             \
+    glVertex3f((x1), (y1), 0);      \
+    glVertex3f((x2), (y2), 0);      \
     glEnd();
 
 /* birb */
@@ -33,7 +39,7 @@ struct Pipe
 
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
-static double PIPE_GAP_HEIGHT = 800.0/WINDOW_HEIGHT;
+static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static double GRAVITY = 0.0015;
 static int FPS = 60;
@@ -44,7 +50,6 @@ double yOfNextHole = 0.0;
 Pipe currentLastPipe;
 list<Pipe> pipes;
 Birb birb = Birb();
-
 
 /* shapes and figures */
 void drawCircle(int x, double y, int radius)
@@ -62,7 +67,8 @@ void drawCircle(int x, double y, int radius)
     glEnd();
 }
 
-void drawPipe(Pipe p){
+void drawPipe(Pipe p)
+{
     /* lower half */
     glBegin(GL_POLYGON);
     glColor3f(0, 1, 0);
@@ -83,15 +89,15 @@ void drawPipe(Pipe p){
 
 bool birbTouchesPipe()
 {
-    double rad = birb.width/900/2;
+    double rad = birb.width / 900 / 2;
     bool touching = false;
-    for(int i = 0; i < pipes.length(); i++)
+    for (int i = 0; i < pipes.length(); i++)
     {
-        if(birb.x/WINDOW_WIDTH+rad < pipes[i]->value.x)
+        if (birb.x / WINDOW_WIDTH + rad < pipes[i]->value.x)
             continue;
-        if(birb.x/WINDOW_WIDTH-rad > pipes[i]->value.x + pipes[i]->value.width)
+        if (birb.x / WINDOW_WIDTH - rad > pipes[i]->value.x + pipes[i]->value.width)
             continue;
-        if(birb.y+rad < -1.0 + pipes[i]->value.height + PIPE_GAP_HEIGHT && birb.y-rad > -1.0 + pipes[i]->value.height)
+        if (birb.y + rad < -1.0 + pipes[i]->value.height + PIPE_GAP_HEIGHT && birb.y - rad > -1.0 + pipes[i]->value.height)
             continue;
         touching = true;
     }
@@ -133,13 +139,17 @@ void reset()
 Pipe getNextPipe()
 {
     /* check for which one of the first three
-     * pipes is the next */
-    Pipe currentClosest = pipes[0]->value;
-    for(int i = 0; i < pipes.length(); i++)
+       pipes is the next  */
+    Pipe currentClosest = pipes[-1]->value;
+    for (int i = 0; i < pipes.length(); i++)
     {
         Pipe temp = pipes[i]->value;
-        if (temp.x+temp.width < )
+        //if (temp.x + temp.width < birb.x - birb.width / 900 / 2)
+        //    continue;
+        if (temp.x < currentClosest.x && temp.x > birb.x/900 - birb.width/900 - 0.2)
+            return temp;
     }
+    return currentClosest;
 }
 
 /* glut functions */
@@ -161,10 +171,18 @@ void display()
             std::cout << score << std::endl;
             pipes[i]->value.x = pipes[-1]->value.x + 0.8;
             pipes.append(pipes.pop(0));
-
         }
         drawPipe(pipes[i]->value);
     }
+
+    /* draw birb sight */
+    // todo : maybe move this into another programm
+    //        since this should only be the base game
+    Pipe temp = getNextPipe();
+    //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
+    drawOneLine(birb.x / 900, birb.y, temp.x, birb.y);
+    drawOneLine(temp.x, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT/2);
+    drawOneLine(birb.x / 900, birb.y, birb.x / 900, -1.0);
 
     glutSwapBuffers();
 
