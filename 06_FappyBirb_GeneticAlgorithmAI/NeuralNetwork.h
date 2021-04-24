@@ -9,6 +9,8 @@ private:
 public:
     Agent(int noInputs, vector<int> layers);
     vector<double> forwardPass(vector<double> inputs);
+    vector<vector<Neuron>> getNeurons();
+    void applyWeights(vector<double> newWeights);
     ~Agent();
 };
 
@@ -40,6 +42,27 @@ vector<double> Agent::forwardPass(vector<double> inputs)
         lastOutputs = temp;
     }
     return lastOutputs;
+}
+
+vector<vector<Neuron>> Agent::getNeurons()
+{
+    return neurons;
+}
+
+void Agent::applyWeights(vector<double> newWeights)
+{
+    int counter = 0;
+    for(vector<Neuron> &layer : neurons)
+    {
+        for(Neuron &n : layer)
+        {
+            for(int i = 0; i < n.getWeights().size(); i++)
+            {
+                n.setWeight(i, newWeights[counter]);
+                counter++;
+            }
+        }
+    }
 }
 
 Agent::~Agent() {}

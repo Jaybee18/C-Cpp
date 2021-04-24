@@ -32,6 +32,8 @@ public:
     void calcDelta(double gradient);
     vector<double> calcGradient(vector<double> gradient);
     void updateWeights();
+    vector<double> getWeights();
+    void setWeight(int index, double w);
     void show();
     ~Neuron();
 };
@@ -94,6 +96,11 @@ void Neuron::updateWeights()
         weights[i] -= delta[i];
 }
 
+vector<double> Neuron::getWeights()
+{
+    return weights;
+}
+
 void Neuron::show()
 {
     cout << endl
@@ -101,6 +108,11 @@ void Neuron::show()
     for (double w : weights)
         std::cout << w << std::endl;
     cout << endl;
+}
+
+void Neuron::setWeight(int index, double w)
+{
+    weights[index] = w;
 }
 
 Neuron::~Neuron()

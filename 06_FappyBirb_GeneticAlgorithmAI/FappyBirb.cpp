@@ -12,7 +12,8 @@
 #include <math.h>
 #include <iostream>
 #include "plist.h"
-#include "NeuralNetwork.h"
+//#include "NeuralNetwork.h" // has to be removed bc of GeneticAlgoritm.h
+#include "GeneticAlgoritm.h"
 
 #define drawOneLine(x1, y1, x2, y2) \
     glBegin(GL_LINES);              \
@@ -40,12 +41,14 @@ struct Pipe
 
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
-static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
+static double PIPE_GAP_HEIGHT = 600.0 / WINDOW_HEIGHT;
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static bool showBirbSight = true;
-static int amountOfAgents = 100;
+static int amountOfAgents = 200;
 static double GRAVITY = 0.0015;
+static int deathMaxScore = 50;
 static int FPS = 120;
+int bestScore = 0;
 bool movePipes = true;
 double distToNextPipe = 0.0;
 double yPosittion = 0.0;
@@ -144,6 +147,31 @@ void updateBirb(Birb &b)
     }
 }*/
 
+void reset(vector<Agent> newAgents)
+{
+    /* initialization of pipes */
+    pipes.clear();
+    int amountOfPipes = 5;
+    for (int i = 0; i < amountOfPipes; i++)
+    {
+        Pipe p = Pipe();
+        p.x = 0.8 * i;
+        p.height = rand()/(RAND_MAX*1.0);
+        pipes.append(p);
+    }
+
+    /* initialization of agents */
+    agents.clear();
+    birbs.clear();
+    scores.clear();
+    for (int i = 0; i < amountOfAgents; i++)
+    {
+        birbs.push_back(Birb());
+        scores.push_back(0);
+    }
+    agents = newAgents;
+}
+
 void reset()
 {
     /* initialization of pipes */
@@ -207,7 +235,11 @@ void display()
         {
             for (int j = 0; j < amountOfAgents; j++)
                 if (!birbs[j].isDead)
+                {
                     scores[j]++;
+                    if (scores[j] >= deathMaxScore)
+                        birbs[j].isDead = true;
+                }
             pipes[i]->value.x = pipes[-1]->value.x + 0.8;
             pipes.append(pipes.pop(0));
         }
@@ -241,13 +273,35 @@ void display()
         if (output[0] > 0.5)
             jump(birbs[index]);
     }
+
+    /* when all agents are dead
+     * choose the best ones and
+     * cross them
+     */
     if (allDead){
-        int maxScore = 0;
-        for(int s : scores)
-            if (s > 0)
-                maxScore = s;
-        std::cout << maxScore << std::endl;
-        reset();
+        int maxScore = 0, maxSecondScore = 0;
+        Agent first = agents[0], second = agents[1];
+        for(int i = 0; i < scores.size(); i++){
+            if(scores[i] > maxScore)
+            {
+                maxScore = scores[i];
+                first = agents[i];
+            }else if(scores[i] > maxSecondScore){
+                maxSecondScore = scores[i];
+                second = agents[i];
+            }
+        }
+        vector<double> genes1 = extractWeights(first), genes2 = extractWeights(second);
+        vector<double> newGene = generateNewGene(genes1, genes2);
+        vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents, newGene);
+
+        // todo : something here is wrong !!!!
+        if(maxScore >= bestScore){
+            reset(newAgents);
+            bestScore = maxScore;
+        }else{
+            reset();
+        }
     }
 
     glutSwapBuffers();
@@ -259,19 +313,6 @@ void timer(int v)
     glutPostRedisplay();
     glutTimerFunc(1000 / FPS, timer, v);
 }
-
-/*void mouse(int button, int state, int x, int y)
-{
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-    {
-        /* !! have to match with initialization value !! 
-        if (birb.isDead)
-        {
-            reset();
-        }
-        jump();
-    }
-}*/
 
 int main(int argc, char **argv)
 {
