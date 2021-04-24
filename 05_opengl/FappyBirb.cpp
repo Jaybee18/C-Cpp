@@ -1,6 +1,6 @@
 /* compiling
  * linux   : g++ 05_opengl/FappyBirb.cpp -lglut -lGL -o 05_opengl/FappyBirb; ./05_opengl/FappyBirb
- * windows : g++ 05_opengl/main.cpp -o 05_opengl/main.exe -I"C:\MinGW\include" -L"C:\MinGW\lib" -lfreeglut -lopengl32 && 05_opengl\main.exe
+ * windows : g++ 05_opengl/FappyBirb.cpp -o 05_opengl/FappyBirb.exe -I"C:\MinGW\include" -L"C:\MinGW\lib" -lfreeglut -lopengl32 && 05_opengl\FappyBirb.exe
  */
 
 #ifdef _WIN32
@@ -42,6 +42,7 @@ static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
 static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static double GRAVITY = 0.0015;
+static bool showBirbSight = true;
 static int FPS = 60;
 int score = 0;
 double distToNextPipe = 0.0;
@@ -119,6 +120,12 @@ void updateBirb()
     glPopMatrix();
 }
 
+double randomDouble()
+{
+    // yoinked from da net
+    return static_cast<double>(rand()) / static_cast<double>(RAND_MAX + 1);
+}
+
 void reset()
 {
     score = 0;
@@ -131,7 +138,7 @@ void reset()
     {
         Pipe p = Pipe();
         p.x = 0.8 * i;
-        p.height = 0.4;
+        p.height = randomDouble();
         pipes.append(p);
     }
 }
@@ -146,7 +153,7 @@ Pipe getNextPipe()
         Pipe temp = pipes[i]->value;
         //if (temp.x + temp.width < birb.x - birb.width / 900 / 2)
         //    continue;
-        if (temp.x < currentClosest.x && temp.x > birb.x/900 - birb.width/900 - 0.2)
+        if (temp.x < currentClosest.x && temp.x > birb.x / 900 - birb.width / 900 - 0.2)
             return temp;
     }
     return currentClosest;
@@ -175,17 +182,19 @@ void display()
         drawPipe(pipes[i]->value);
     }
 
-    /* draw birb sight */
-    // todo : maybe move this into another programm
-    //        since this should only be the base game
-    Pipe temp = getNextPipe();
-    //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
-    drawOneLine(birb.x / 900, birb.y, temp.x, birb.y);
-    drawOneLine(temp.x, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT/2);
-    drawOneLine(birb.x / 900, birb.y, birb.x / 900, -1.0);
+    if (showBirbSight)
+    {
+        /* draw birb sight */
+        // todo : maybe move this into another programm
+        //        since this should only be the base game
+        Pipe temp = getNextPipe();
+        //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
+        drawOneLine(birb.x / 900, birb.y, temp.x, birb.y);
+        drawOneLine(temp.x, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
+        drawOneLine(birb.x / 900, birb.y, birb.x / 900, -1.0);
+    }
 
     glutSwapBuffers();
-
     glFlush();
 }
 
@@ -216,7 +225,7 @@ int main(int argc, char **argv)
     {
         Pipe p = Pipe();
         p.x = 0.8 * i;
-        p.height = 0.4;
+        p.height = randomDouble();
         pipes.append(p);
     }
 
