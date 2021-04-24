@@ -9,17 +9,17 @@ private:
     vector<Layer> layers;
 
 public:
-    NeuralNetwork(int noLayers, vector<int> noNeurons, int noInputs);
+    NeuralNetwork(vector<int> noNeurons, int noInputs);
     vector<double> forwardPass(vector<double> input);
-    void train(vector<double> input, vector<double> output, int iterations);
+    void train(vector<vector<double>> input, vector<vector<double>> output, int iterations);
     void show();
     ~NeuralNetwork();
 };
 
-NeuralNetwork::NeuralNetwork(int noLayers, vector<int> noNeurons, int noInputs)
+NeuralNetwork::NeuralNetwork(vector<int> noNeurons, int noInputs)
 {
     int lastOutputs = noInputs;
-    for (int i = 0; i < noLayers; i++)
+    for (int i = 0; i < noNeurons.size(); i++)
     {
         Layer temp = Layer(noNeurons[i], lastOutputs);
         layers.push_back(temp);
@@ -35,27 +35,30 @@ vector<double> NeuralNetwork::forwardPass(vector<double> input)
     return outputs_lastLayer;
 }
 
-void NeuralNetwork::train(vector<double> input, vector<double> output, int iterations)
+void NeuralNetwork::train(vector<vector<double>> input, vector<vector<double>> output, int iterations)
 {
     for (int iteration = 0; iteration < iterations; iteration++)
     {
-        // forward pass
-        vector<vector<double>> outputs;
-        vector<double> lastOutput = input;
-        for (int i = 0; i < layers.size(); i++)
+        for (int dataset = 0; dataset < input.size(); dataset++)
         {
-            vector<double> tempOutput = layers[i].forwardPass(input);
-            outputs.push_back(tempOutput);
-            lastOutput = tempOutput;
+            // forward pass
+            vector<vector<double>> outputs;
+            vector<double> lastOutput = input[dataset];
+            for (int i = 0; i < layers.size(); i++)
+            {
+                vector<double> tempOutput = layers[i].forwardPass(input[dataset]);
+                outputs.push_back(tempOutput);
+                lastOutput = tempOutput;
+            }
+
+            // backpropagation
+            /* calculate the mse wrt each of the activations */
+            vector<double> error = layers[layers.size() - 1].calcError(output[dataset]);
+
+            layers[layers.size() - 1].calcWeightDeltas(error);
+            layers[layers.size() - 1].updateWeights();
         }
-
-        // backpropagation
-        /* calculate the mse wrt each of the activations */
-        vector<double> error = layers[layers.size() - 1].calcError(output);
-
-        layers[layers.size() - 1].calcWeightDeltas(error);
-
-        layers[layers.size() - 1].updateWeights();
+        // todo : move update weights to here
     }
 }
 

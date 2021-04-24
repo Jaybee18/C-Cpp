@@ -54,8 +54,7 @@ void Layer::calcWeightDeltas(vector<double> gradient)
 {
     for (int i = 0; i < neurons.size(); i++)
     {
-        neurons[i].calcDelta(gradient[0]);
-        //neurons[i].updateWeights();
+        neurons[i].calcDelta(gradient[i]);
     }
 }
 
