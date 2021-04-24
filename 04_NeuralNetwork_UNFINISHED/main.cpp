@@ -10,7 +10,7 @@ int main()
     {
         std::cout << "Output Neuron #" << i << " : " << output[i] << std::endl;
     }
-    n.train({1.0, 0.0}, {1.0}, 1);
+    n.train({1.0, 0.0}, {1.0}, 1000);
 
     output = n.forwardPass({1.0, 0.0});
     for (int i = 0; i < output.size(); i++)

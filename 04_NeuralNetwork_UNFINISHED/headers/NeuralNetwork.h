@@ -39,7 +39,6 @@ void NeuralNetwork::train(vector<double> input, vector<double> output, int itera
 {
     for (int iteration = 0; iteration < iterations; iteration++)
     {
-        show();
         // forward pass
         vector<vector<double>> outputs;
         vector<double> lastOutput = input;
@@ -53,13 +52,10 @@ void NeuralNetwork::train(vector<double> input, vector<double> output, int itera
         // backpropagation
         /* calculate the mse wrt each of the activations */
         vector<double> error = layers[layers.size() - 1].calcError(output);
-        //std::cout << error[0] << std::endl;
 
-        layers[layers.size() - 1].calcWeightDeltas({1.0});
+        layers[layers.size() - 1].calcWeightDeltas(error);
 
         layers[layers.size() - 1].updateWeights();
-
-        show();
     }
 }
 

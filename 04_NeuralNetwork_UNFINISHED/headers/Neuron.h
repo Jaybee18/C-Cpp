@@ -49,6 +49,7 @@ double Neuron::forwardPass(vector<double> input)
         output += weights[i] * input[i];
     }
     output += bias;
+    lastNetIn = output;
     return sigmoid(output);
 }
 
@@ -63,17 +64,13 @@ double Neuron::forwardPass(vector<double> input)
  */
 void Neuron::calcDelta(double gradient)
 {
-    vector<double> placeholder;
+    delta.clear();
     for (int i = 0; i < lastIn.size(); i++)
     {
         double temp = gradient * sigmoid_d(lastNetIn) * lastIn[i];
-        //std::cout << temp << std::endl;
-        placeholder.push_back(temp);
-        weights[i] -= temp;
+        delta.push_back(temp);
     }
-    delta = placeholder;
-    //bias can be updated instantly
-    //bias -= gradient * sigmoid_d(lastNetIn) * 1;
+    bias -= gradient * sigmoid_d(lastNetIn) * 1;
 }
 
 vector<double> Neuron::calcGradient(vector<double> gradient)
@@ -88,18 +85,15 @@ vector<double> Neuron::calcGradient(vector<double> gradient)
 
 void Neuron::updateWeights()
 {
-    cout << "fuck my life" << endl;
-    double ficken = 100.0;
-    weights = {100.0, 90.0};
+    for(int i = 0; i < weights.size(); i++)
+        weights[i] -= delta[i];
 }
 
 void Neuron::show()
 {
     cout << endl << "Neuron" << endl;
-    for (double w : weights)
-    {
-        cout << w << endl;
-    }
+    for(double w : weights)
+        std::cout << w << std::endl;
     cout << endl;
 }
 

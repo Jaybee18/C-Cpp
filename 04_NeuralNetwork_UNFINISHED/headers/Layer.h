@@ -54,7 +54,8 @@ void Layer::calcWeightDeltas(vector<double> gradient)
 {
     for (int i = 0; i < neurons.size(); i++)
     {
-        neurons[i].calcDelta(gradient[i]);
+        neurons[i].calcDelta(gradient[0]);
+        //neurons[i].updateWeights();
     }
 }
 
@@ -82,10 +83,10 @@ vector<double> Layer::calcGradients(vector<double> gradient)
 
 void Layer::updateWeights()
 {
-    for (Neuron n : neurons)
-    {
-        n.updateWeights();
-    }
+    for (int i = 0; i < neurons.size(); i++)
+        neurons[i].updateWeights();
+    //for(Neuron n : neurons) //   NEVER USE THIS AGAIN YOU FUCKING IDIOT IT WILL 
+    //    n.updateWeights();   // ONLY CAUSE PAIN! REMEMBER REMEMBER REMEMBER
 }
 
 void Layer::show()
