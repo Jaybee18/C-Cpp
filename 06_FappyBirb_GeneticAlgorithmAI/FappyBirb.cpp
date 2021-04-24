@@ -46,6 +46,7 @@ static bool showBirbSight = true;
 static int amountOfAgents = 100;
 static double GRAVITY = 0.0015;
 static int FPS = 120;
+bool movePipes = true;
 double distToNextPipe = 0.0;
 double yPosittion = 0.0;
 double yOfNextHole = 0.0;
@@ -126,12 +127,6 @@ void updateBirb(Birb &b)
     glPopMatrix();
 }
 
-/*double randomDouble()
-{
-    // yoinked from da net
-    return static_cast<double>(rand()) / static_cast<double>(RAND_MAX + 1);
-}*/
-
 /*void reset()
 {
     score = 0;
@@ -148,6 +143,31 @@ void updateBirb(Birb &b)
         pipes.append(p);
     }
 }*/
+
+void reset()
+{
+    /* initialization of pipes */
+    pipes.clear();
+    int amountOfPipes = 5;
+    for (int i = 0; i < amountOfPipes; i++)
+    {
+        Pipe p = Pipe();
+        p.x = 0.8 * i;
+        p.height = rand()/(RAND_MAX*1.0);
+        pipes.append(p);
+    }
+
+    /* initialization of agents */
+    agents.clear();
+    birbs.clear();
+    scores.clear();
+    for (int i = 0; i < amountOfAgents; i++)
+    {
+        agents.push_back(Agent(3, {4, 4, 1}));
+        birbs.push_back(Birb());
+        scores.push_back(0);
+    }
+}
 
 Pipe getNextPipe(Birb b)
 {
@@ -191,7 +211,8 @@ void display()
             pipes[i]->value.x = pipes[-1]->value.x + 0.8;
             pipes.append(pipes.pop(0));
         }
-        drawPipe(pipes[i]->value);
+        if (movePipes)
+            drawPipe(pipes[i]->value);
     }
 
     Pipe temp;
@@ -208,14 +229,25 @@ void display()
     }
 
     /* let the agent play */
+    bool allDead = true;
     for (int index = 0; index < amountOfAgents; index++)
     {
+        if(!birbs[index].isDead)
+            allDead = false;
         distToNextPipe = temp.x - birbs[index].x / 900;
         yPosittion = birbs[index].y;
         yOfNextHole = -1.0 + temp.height + PIPE_GAP_HEIGHT;
         vector<double> output = agents[index].forwardPass({distToNextPipe, yPosittion, yOfNextHole});
         if (output[0] > 0.5)
             jump(birbs[index]);
+    }
+    if (allDead){
+        int maxScore = 0;
+        for(int s : scores)
+            if (s > 0)
+                maxScore = s;
+        std::cout << maxScore << std::endl;
+        reset();
     }
 
     glutSwapBuffers();
