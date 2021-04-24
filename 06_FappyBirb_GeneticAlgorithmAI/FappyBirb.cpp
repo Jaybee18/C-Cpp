@@ -26,7 +26,7 @@
 struct Birb
 {
     double x = -500.0, y = 0.0;
-    double velocity = 0.03;
+    double velocity = 0.00;
     bool isDead = false;
     double width = 100.0;
 };
@@ -42,13 +42,16 @@ struct Pipe
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
 static double PIPE_GAP_HEIGHT = 700.0 / WINDOW_HEIGHT;
-static vector<int> agentNetworkTopology = {4, 4, 1};
+static vector<int> agentNetworkTopology = {6, 6, 1};
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static bool showBirbSight = true;
-static int amountOfAgents = 100;
+static int amountOfAgents = 200;
 static double GRAVITY = 0.0015;
-static int forceDeathScore = 30000;
-static int FPS = 120;
+static int forceDeathScore = 5000;
+static int pipeDistance = 1.4;
+static int startPipeDistande = 1.0;
+static double jumpingThreshold = 0.7;
+static int FPS = 270;
 int bestScore = 0;
 int generation = 0;
 bool movePipes = true;
@@ -139,23 +142,6 @@ void updateBirb(Birb &b)
     }
 }
 
-/*void reset()
-{
-    score = 0;
-    birb.y = 0.0;
-    birb.isDead = false;
-    birb.velocity = 0.03;
-    pipes.clear();
-    int amountOfPipes = 5;
-    for (int i = 0; i < amountOfPipes; i++)
-    {
-        Pipe p = Pipe();
-        p.x = 0.8 * i;
-        p.height = randomDouble()+1;
-        pipes.append(p);
-    }
-}*/
-
 void reset(vector<Agent> newAgents)
 {
     /* initialization of pipes */
@@ -164,7 +150,7 @@ void reset(vector<Agent> newAgents)
     for (int i = 0; i < amountOfPipes; i++)
     {
         Pipe p = Pipe();
-        p.x = 0.5 + 1.0 * i;
+        p.x = startPipeDistande + pipeDistance * i;
         p.height = rand() / (RAND_MAX * 1.0);
         pipes.append(p);
     }
@@ -189,7 +175,7 @@ void reset()
     for (int i = 0; i < amountOfPipes; i++)
     {
         Pipe p = Pipe();
-        p.x = 1.0 * i;
+        p.x = startPipeDistande + pipeDistance * i;
         p.height = rand() / (RAND_MAX * 1.0);
         pipes.append(p);
     }
@@ -258,7 +244,7 @@ void display()
                     //if (scores[j] >= deathMaxScore)
                     //    birbs[j].isDead = true;
                 }*/
-            pipes[i]->value.x = pipes[-1]->value.x + 0.8;
+            pipes[i]->value.x = pipes[-1]->value.x + pipeDistance;
             pipes.append(pipes.pop(0));
         }
         if (movePipes && generation % 1 == 0)
@@ -269,7 +255,7 @@ void display()
     // todo : maybe move this into another programm
     //        since this should only be the base game
     Pipe temp;
-    if (showBirbSight && generation % 1 == 0)
+    if (showBirbSight)
     {
         temp = getNextPipe(birbs[0]);
         //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
@@ -288,7 +274,7 @@ void display()
         yPosittion = birbs[index].y;
         yOfNextHole = -1.0 + temp.height + PIPE_GAP_HEIGHT;
         vector<double> output = agents[index].forwardPass({distToNextPipe, yPosittion, yOfNextHole});
-        if (output[0] > 0.7)
+        if (output[0] > jumpingThreshold)
             jump(birbs[index]);
     }
 
@@ -330,13 +316,6 @@ void display()
         {
             reset(generateAgentsFromGene(amountOfAgents, lastBestGene, agentNetworkTopology));
         }
-        /*if(maxScore >= bestScore){
-            lastBestGene = genes1;
-            reset(newAgents);
-            bestScore = maxScore;
-        }else{
-            reset(generateAgentsFromGene(amountOfAgents, lastBestGene));
-        }*/
     }
 
     glutSwapBuffers();
@@ -358,7 +337,7 @@ int main(int argc, char **argv)
     for (int i = 0; i < amountOfPipes; i++)
     {
         Pipe p = Pipe();
-        p.x = 0.5 + 1.0 * i;
+        p.x = startPipeDistande + pipeDistance * i;
         p.height = rand() / (RAND_MAX * 1.0);
         pipes.append(p);
     }
