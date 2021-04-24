@@ -42,19 +42,21 @@ struct Pipe
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
 static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
 static double PIPE_MOVEMENT_SPEED = 0.008;
-static double GRAVITY = 0.0015;
 static bool showBirbSight = true;
-static int FPS = 60;
-int score = 0;
+static int amountOfAgents = 100;
+static double GRAVITY = 0.0015;
+static int FPS = 120;
 double distToNextPipe = 0.0;
 double yPosittion = 0.0;
 double yOfNextHole = 0.0;
+vector<int> scores;
 
 /* objects */
 Pipe currentLastPipe;
 list<Pipe> pipes;
-Birb birb = Birb();
-Agent agent = Agent(3, {4, 4, 1});
+//Birb birb = Birb();
+vector<Agent> agents; // = Agent(3, {4, 4, 1});
+vector<Birb> birbs;
 
 /* shapes and figures */
 void drawCircle(int x, double y, int radius)
@@ -92,35 +94,35 @@ void drawPipe(Pipe p)
     glEnd();
 }
 
-bool birbTouchesPipe()
+bool birbTouchesPipe(Birb b)
 {
-    double rad = birb.width / 900 / 2;
+    double rad = b.width / 900 / 2;
     bool touching = false;
     for (int i = 0; i < pipes.length(); i++)
     {
-        if (birb.x / WINDOW_WIDTH + rad < pipes[i]->value.x)
+        if (b.x / WINDOW_WIDTH + rad < pipes[i]->value.x)
             continue;
-        if (birb.x / WINDOW_WIDTH - rad > pipes[i]->value.x + pipes[i]->value.width)
+        if (b.x / WINDOW_WIDTH - rad > pipes[i]->value.x + pipes[i]->value.width)
             continue;
-        if (birb.y + rad < -1.0 + pipes[i]->value.height + PIPE_GAP_HEIGHT && birb.y - rad > -1.0 + pipes[i]->value.height)
+        if (b.y + rad < -1.0 + pipes[i]->value.height + PIPE_GAP_HEIGHT && b.y - rad > -1.0 + pipes[i]->value.height)
             continue;
         touching = true;
     }
     return touching;
 }
 
-void updateBirb()
+void updateBirb(Birb &b)
 {
-    if (birb.y <= (WINDOW_HEIGHT - birb.width) / -WINDOW_HEIGHT || birbTouchesPipe() || birb.y >= (WINDOW_HEIGHT - birb.width) / WINDOW_HEIGHT)
-        birb.isDead = true;
-    if (!birb.isDead)
+    if (b.y <= (WINDOW_HEIGHT - b.width) / -WINDOW_HEIGHT || birbTouchesPipe(b) || b.y >= (WINDOW_HEIGHT - b.width) / WINDOW_HEIGHT)
+        b.isDead = true;
+    if (!b.isDead)
     {
-        birb.y += birb.velocity;
-        birb.velocity -= GRAVITY;
+        b.y += b.velocity;
+        b.velocity -= GRAVITY;
     }
     glPushMatrix();
-    glTranslatef(0, birb.y, 0);
-    drawCircle(birb.x, birb.y, birb.width);
+    glTranslatef(0, b.y, 0);
+    drawCircle(b.x, b.y, b.width);
     glPopMatrix();
 }
 
@@ -130,7 +132,7 @@ void updateBirb()
     return static_cast<double>(rand()) / static_cast<double>(RAND_MAX + 1);
 }*/
 
-void reset()
+/*void reset()
 {
     score = 0;
     birb.y = 0.0;
@@ -142,12 +144,12 @@ void reset()
     {
         Pipe p = Pipe();
         p.x = 0.8 * i;
-        p.height = randomDouble();
+        p.height = randomDouble()+1;
         pipes.append(p);
     }
-}
+}*/
 
-Pipe getNextPipe()
+Pipe getNextPipe(Birb b)
 {
     /* check for which one of the first three
        pipes is the next  */
@@ -157,15 +159,15 @@ Pipe getNextPipe()
         Pipe temp = pipes[i]->value;
         //if (temp.x + temp.width < birb.x - birb.width / 900 / 2)
         //    continue;
-        if (temp.x < currentClosest.x && temp.x > birb.x / 900 - birb.width / 900 - 0.2)
+        if (temp.x < currentClosest.x && temp.x > b.x / 900 - b.width / 900 - 0.2)
             return temp;
     }
     return currentClosest;
 }
 
-void jump()
+void jump(Birb &b)
 {
-    birb.velocity = 0.03;
+    b.velocity = 0.03;
 }
 
 /* glut functions */
@@ -174,17 +176,18 @@ void display()
     glClear(GL_COLOR_BUFFER_BIT);
 
     /* draw da birb */
-    updateBirb();
+    for (Birb &b : birbs)
+        updateBirb(b);
 
     /* draw pipes */
     for (int i = 0; i < pipes.length(); i++)
     {
-        if (!birb.isDead)
-            pipes[i]->value.x -= PIPE_MOVEMENT_SPEED;
+        pipes[i]->value.x -= PIPE_MOVEMENT_SPEED;
         if (pipes[i]->value.x + pipes[i]->value.width < -1.0)
         {
-            score++;
-            std::cout << score << std::endl;
+            for (int j = 0; j < amountOfAgents; j++)
+                if (!birbs[j].isDead)
+                    scores[j]++;
             pipes[i]->value.x = pipes[-1]->value.x + 0.8;
             pipes.append(pipes.pop(0));
         }
@@ -197,20 +200,23 @@ void display()
         /* draw birb sight */
         // todo : maybe move this into another programm
         //        since this should only be the base game
-        temp = getNextPipe();
+        temp = getNextPipe(birbs[0]);
         //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
-        drawOneLine(birb.x / 900, birb.y, temp.x, birb.y);
-        drawOneLine(temp.x, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
-        drawOneLine(birb.x / 900, birb.y, birb.x / 900, -1.0);
+        drawOneLine(birbs[0].x / 900, birbs[0].y, temp.x, birbs[0].y);
+        drawOneLine(temp.x, birbs[0].y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
+        drawOneLine(birbs[0].x / 900, birbs[0].y, birbs[0].x / 900, -1.0);
     }
 
     /* let the agent play */
-    distToNextPipe = temp.x - birb.x/900;
-    yPosittion = birb.y;
-    yOfNextHole = -1.0 + temp.height + PIPE_GAP_HEIGHT;
-    vector<double> output = agent.forwardPass({distToNextPipe, yPosittion, yOfNextHole});
-    if (output[0] > 0.5)
-        jump();
+    for (int index = 0; index < amountOfAgents; index++)
+    {
+        distToNextPipe = temp.x - birbs[index].x / 900;
+        yPosittion = birbs[index].y;
+        yOfNextHole = -1.0 + temp.height + PIPE_GAP_HEIGHT;
+        vector<double> output = agents[index].forwardPass({distToNextPipe, yPosittion, yOfNextHole});
+        if (output[0] > 0.5)
+            jump(birbs[index]);
+    }
 
     glutSwapBuffers();
     glFlush();
@@ -222,29 +228,39 @@ void timer(int v)
     glutTimerFunc(1000 / FPS, timer, v);
 }
 
-void mouse(int button, int state, int x, int y)
+/*void mouse(int button, int state, int x, int y)
 {
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
-        /* !! have to match with initialization value !! */
+        /* !! have to match with initialization value !! 
         if (birb.isDead)
         {
             reset();
         }
         jump();
     }
-}
+}*/
 
 int main(int argc, char **argv)
 {
+    srand((unsigned) time(0));
+
     /* initialization of pipes */
     int amountOfPipes = 5;
     for (int i = 0; i < amountOfPipes; i++)
     {
         Pipe p = Pipe();
         p.x = 0.8 * i;
-        p.height = randomDouble();
+        p.height = rand()/(RAND_MAX*1.0);
         pipes.append(p);
+    }
+
+    /* initialization of agents */
+    for (int i = 0; i < amountOfAgents; i++)
+    {
+        agents.push_back(Agent(3, {4, 4, 1}));
+        birbs.push_back(Birb());
+        scores.push_back(0);
     }
 
     /* initialisation */
@@ -257,7 +273,7 @@ int main(int argc, char **argv)
 
     glutDisplayFunc(display);
     glutTimerFunc(100, timer, 0);
-    glutMouseFunc(mouse);
+    //glutMouseFunc(mouse);
 
     glutMainLoop();
     return 0;

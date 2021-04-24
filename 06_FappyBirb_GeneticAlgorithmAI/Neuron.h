@@ -3,13 +3,18 @@
 #include <cstdlib>
 #include <ctime>
 #include <iostream> // debugging
+#include <random>
 
 using namespace std;
 
-double randomDouble()
+/*double randomDouble()
 {
     // yoinked from da net
     return static_cast<double>(rand()) / static_cast<double>(RAND_MAX + 1);
+}*/
+double randomDouble()
+{
+    return rand()/15000.0-1;
 }
 
 class Neuron
@@ -85,14 +90,15 @@ vector<double> Neuron::calcGradient(vector<double> gradient)
 
 void Neuron::updateWeights()
 {
-    for(int i = 0; i < weights.size(); i++)
+    for (int i = 0; i < weights.size(); i++)
         weights[i] -= delta[i];
 }
 
 void Neuron::show()
 {
-    cout << endl << "Neuron" << endl;
-    for(double w : weights)
+    cout << endl
+         << "Neuron" << endl;
+    for (double w : weights)
         std::cout << w << std::endl;
     cout << endl;
 }
