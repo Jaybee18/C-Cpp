@@ -56,7 +56,10 @@ void NeuralNetwork::train(vector<vector<double>> input, vector<vector<double>> o
             vector<double> error = layers[layers.size() - 1].calcError(output[dataset]);
 
             layers[layers.size() - 1].calcWeightDeltas(error);
+            vector<double> grad = layers[layers.size() - 1].calcGradients(error);
+            layers[layers.size() - 2].calcWeightDeltas(grad);
             layers[layers.size() - 1].updateWeights();
+            layers[layers.size() - 2].updateWeights();
         }
         // todo : move update weights to here
     }

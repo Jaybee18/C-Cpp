@@ -82,10 +82,12 @@ vector<double> Layer::calcGradients(vector<double> gradient)
 
 void Layer::updateWeights()
 {
-    for (int i = 0; i < neurons.size(); i++)
-        neurons[i].updateWeights();
-    //for(Neuron n : neurons) //   NEVER USE THIS AGAIN YOU FUCKING IDIOT IT WILL 
-    //    n.updateWeights();   // ONLY CAUSE PAIN! REMEMBER REMEMBER REMEMBER
+    // This iterates by reference ==> GOOD
+    for(Neuron& n : neurons)
+        n.updateWeights();
+    // This iterates by value ==> MOSTLY BAD
+    // for(Neuron n : neurons)
+    //     n.updateWeights();
 }
 
 void Layer::show()
