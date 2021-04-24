@@ -42,13 +42,13 @@ struct Pipe
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
 static double PIPE_GAP_HEIGHT = 700.0 / WINDOW_HEIGHT;
-static vector<int> agentNetworkTopology = {6, 6, 1};
+static vector<int> agentNetworkTopology = {4, 4, 1};
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static bool showBirbSight = true;
-static int amountOfAgents = 200;
+static int amountOfAgents = 100;
 static double GRAVITY = 0.0015;
 static int forceDeathScore = 30000;
-static int FPS = 1000;
+static int FPS = 120;
 int bestScore = 0;
 int generation = 0;
 bool movePipes = true;
@@ -131,7 +131,7 @@ void updateBirb(Birb &b)
     {
         return;
     }
-    if(generation % 50 == 0){
+    if(generation % 1 == 0){
     glPushMatrix();
     glTranslatef(0, b.y, 0);
     drawCircle(b.x, b.y, b.width);
@@ -261,7 +261,7 @@ void display()
             pipes[i]->value.x = pipes[-1]->value.x + 0.8;
             pipes.append(pipes.pop(0));
         }
-        if (movePipes && generation % 50 == 0)
+        if (movePipes && generation % 1 == 0)
             drawPipe(pipes[i]->value);
     }
 
@@ -269,12 +269,12 @@ void display()
     // todo : maybe move this into another programm
     //        since this should only be the base game
     Pipe temp;
-    if (showBirbSight && generation % 50 == 0)
+    if (showBirbSight && generation % 1 == 0)
     {
         temp = getNextPipe(birbs[0]);
         //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
-        drawOneLine(birbs[0].x / 900, birbs[0].y, temp.x, birbs[0].y);
-        drawOneLine(temp.x, birbs[0].y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
+        drawOneLine(birbs[0].x / 900, birbs[0].y, temp.x + temp.width, birbs[0].y);
+        drawOneLine(temp.x + temp.width, birbs[0].y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
         drawOneLine(birbs[0].x / 900, birbs[0].y, birbs[0].x / 900, -1.0);
     }
 
@@ -284,11 +284,11 @@ void display()
     {
         if (!birbs[index].isDead)
             allDead = false;
-        distToNextPipe = temp.x - birbs[index].x / 900;
+        distToNextPipe = temp.x + temp.width - birbs[index].x / 900;
         yPosittion = birbs[index].y;
         yOfNextHole = -1.0 + temp.height + PIPE_GAP_HEIGHT;
         vector<double> output = agents[index].forwardPass({distToNextPipe, yPosittion, yOfNextHole});
-        if (output[0] > 0.5)
+        if (output[0] > 0.7)
             jump(birbs[index]);
     }
 
@@ -319,15 +319,16 @@ void display()
         vector<double> newGene = generateNewGene(genes1, genes2, maxScore, maxSecondScore);
         vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents, newGene, agentNetworkTopology);
 
-        // todo : something here is wrong !!!!
+        // todo : something here is maybe weird !!!!
         if (maxScore >= bestScore)
         {
             reset(newAgents);
             bestScore = maxScore; // experimental
+            lastBestGene = genes1;
         }
         else
         {
-            reset(newAgents);
+            reset(generateAgentsFromGene(amountOfAgents, lastBestGene, agentNetworkTopology));
         }
         /*if(maxScore >= bestScore){
             lastBestGene = genes1;
