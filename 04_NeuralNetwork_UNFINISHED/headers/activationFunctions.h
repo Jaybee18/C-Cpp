@@ -2,7 +2,7 @@
 
 double sigmoid(double x)
 {
-    return 1 / (1 + exp(x));
+    return 1 / (1 + exp(-x));
 }
 
 double sigmoid_d(double x)
