@@ -18,20 +18,23 @@ vector<double> extractWeights(Agent agent)
     return res;
 }
 
-vector<double> generateNewGene(vector<double> gene1, vector<double> gene2)
+vector<double> generateNewGene(vector<double> gene1, vector<double> gene2, int agent1, int agent2)
 {
+    agent1 *= agent1;
+    agent2 *= agent2;
+    double prob1 = agent1/(agent1 + agent2), prob2 = agent2/(agent1 + agent2);
     vector<double> res;
     for(int i = 0; i < gene1.size(); i++)
     {
         /* mutation */
-        if(rand()/(RAND_MAX*1.0) >= 0.8)
+        if(rand()/(RAND_MAX*1.0) >= 0.7)
         {
             res.push_back(rand()/15000.0-1);
             continue;
         }
 
         /* natural evolution */
-        if(rand()/(RAND_MAX*1.0) >= 0.5)
+        if(rand()/(RAND_MAX*1.0) >= prob1)
         {
             res.push_back(gene1[i]);
         }else
@@ -42,11 +45,11 @@ vector<double> generateNewGene(vector<double> gene1, vector<double> gene2)
     return res;
 }
 
-vector<Agent> generateAgentsFromGene(int noAgents, vector<double> gene)
+vector<Agent> generateAgentsFromGene(int noAgents, vector<double> gene, vector<int> agentNetworkTopology)
 {
     vector<Agent> res;
     for(int i = 0; i < noAgents; i++){
-        Agent temp = Agent(3, {4, 4, 1}); // todo : dynamic
+        Agent temp = Agent(3, agentNetworkTopology); // todo : dynamic
         temp.applyWeights(gene);
         res.push_back(temp);
     }
