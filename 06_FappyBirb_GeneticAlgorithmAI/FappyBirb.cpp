@@ -29,6 +29,7 @@ struct Birb
     double velocity = 0.00;
     bool isDead = false;
     double width = 100.0;
+    int score = 0;
 };
 
 /* pipes */
@@ -41,24 +42,26 @@ struct Pipe
 
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
-static double PIPE_GAP_HEIGHT = 700.0 / WINDOW_HEIGHT;
-static vector<int> agentNetworkTopology = {6, 6, 1};
+static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
+static vector<int> agentNetworkTopology = {6, 4, 1};
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static bool showBirbSight = true;
 static int amountOfAgents = 200;
 static double GRAVITY = 0.0015;
 static int forceDeathScore = 5000;
-static int pipeDistance = 1.4;
-static int startPipeDistande = 1.0;
+static int pipeDistance = 2;
+static int startPipeDistande = 1.8;
 static double jumpingThreshold = 0.7;
-static int FPS = 270;
+static int amountOfPipes = 7;
+static int generationShow = 1;
+static int agentInputs = 2;
+static int FPS = 500;
 int bestScore = 0;
 int generation = 0;
-bool movePipes = true;
+bool movePipes = false;
 double distToNextPipe = 0.0;
 double yPosittion = 0.0;
 double yOfNextHole = 0.0;
-vector<int> scores;
 vector<double> lastBestGene;
 
 /* objects */
@@ -121,77 +124,6 @@ bool birbTouchesPipe(Birb b)
     return touching;
 }
 
-void updateBirb(Birb &b)
-{
-    if (b.y <= (WINDOW_HEIGHT - b.width) / -WINDOW_HEIGHT || birbTouchesPipe(b) || b.y >= (WINDOW_HEIGHT - b.width) / WINDOW_HEIGHT)
-        b.isDead = true;
-    if (!b.isDead)
-    {
-        b.y += b.velocity;
-        b.velocity -= GRAVITY;
-    }
-    else
-    {
-        return;
-    }
-    if(generation % 1 == 0){
-    glPushMatrix();
-    glTranslatef(0, b.y, 0);
-    drawCircle(b.x, b.y, b.width);
-    glPopMatrix();
-    }
-}
-
-void reset(vector<Agent> newAgents)
-{
-    /* initialization of pipes */
-    pipes.clear();
-    int amountOfPipes = 5;
-    for (int i = 0; i < amountOfPipes; i++)
-    {
-        Pipe p = Pipe();
-        p.x = startPipeDistande + pipeDistance * i;
-        p.height = rand() / (RAND_MAX * 1.0);
-        pipes.append(p);
-    }
-
-    /* initialization of agents */
-    agents.clear();
-    birbs.clear();
-    scores.clear();
-    for (int i = 0; i < amountOfAgents; i++)
-    {
-        birbs.push_back(Birb());
-        scores.push_back(0);
-    }
-    agents = newAgents;
-}
-
-void reset()
-{
-    /* initialization of pipes */
-    pipes.clear();
-    int amountOfPipes = 5;
-    for (int i = 0; i < amountOfPipes; i++)
-    {
-        Pipe p = Pipe();
-        p.x = startPipeDistande + pipeDistance * i;
-        p.height = rand() / (RAND_MAX * 1.0);
-        pipes.append(p);
-    }
-
-    /* initialization of agents */
-    agents.clear();
-    birbs.clear();
-    scores.clear();
-    for (int i = 0; i < amountOfAgents; i++)
-    {
-        agents.push_back(Agent(3, agentNetworkTopology));
-        birbs.push_back(Birb());
-        scores.push_back(0);
-    }
-}
-
 Pipe getNextPipe(Birb b)
 {
     /* check for which one of the first three
@@ -202,10 +134,80 @@ Pipe getNextPipe(Birb b)
         Pipe temp = pipes[i]->value;
         //if (temp.x + temp.width < birb.x - birb.width / 900 / 2)
         //    continue;
-        if (temp.x < currentClosest.x && temp.x > b.x / 900 - b.width / 900 - 0.2)
+        if (temp.x < currentClosest.x && temp.x > b.x / 900 - b.width / 900)
             return temp;
     }
     return currentClosest;
+}
+
+void updateBirb(Birb &b)
+{
+    if (b.y <= (WINDOW_HEIGHT - b.width) / -WINDOW_HEIGHT || birbTouchesPipe(b) || b.y >= (WINDOW_HEIGHT - b.width) / WINDOW_HEIGHT)
+    {
+        b.isDead = true;
+        Pipe temp = getNextPipe(b);
+        b.score = b.score / (1 + abs(b.y - (-1.0 + temp.height + PIPE_GAP_HEIGHT / 2)));
+    }
+    if (!b.isDead)
+    {
+        b.y += b.velocity;
+        b.velocity -= GRAVITY;
+    }
+    else
+    {
+        return;
+    }
+    if (generation % generationShow == 0)
+    {
+        glPushMatrix();
+        glTranslatef(0, b.y, 0);
+        drawCircle(b.x, b.y, b.width);
+        glPopMatrix();
+    }
+}
+
+void reset(vector<Agent> newAgents)
+{
+    /* initialization of pipes */
+    pipes.clear();
+    for (int i = 0; i < amountOfPipes; i++)
+    {
+        Pipe p = Pipe();
+        p.x = startPipeDistande + pipeDistance * i;
+        p.height = rand() / (RAND_MAX * 1.0);
+        pipes.append(p);
+    }
+
+    /* initialization of agents */
+    agents.clear();
+    birbs.clear();
+    for (int i = 0; i < amountOfAgents; i++)
+    {
+        birbs.push_back(Birb());
+    }
+    agents = newAgents;
+}
+
+void reset()
+{
+    /* initialization of pipes */
+    pipes.clear();
+    for (int i = 0; i < amountOfPipes; i++)
+    {
+        Pipe p = Pipe();
+        p.x = startPipeDistande + pipeDistance * i;
+        p.height = rand() / (RAND_MAX * 1.0);
+        pipes.append(p);
+    }
+
+    /* initialization of agents */
+    agents.clear();
+    birbs.clear();
+    for (int i = 0; i < amountOfAgents; i++)
+    {
+        agents.push_back(Agent(3, agentNetworkTopology));
+        birbs.push_back(Birb());
+    }
 }
 
 void jump(Birb &b)
@@ -216,7 +218,8 @@ void jump(Birb &b)
 /* glut functions */
 void display()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    if(generation % generationShow == 0)
+        glClear(GL_COLOR_BUFFER_BIT);
 
     /* draw da birb */
     for (Birb &b : birbs)
@@ -224,8 +227,8 @@ void display()
     for (int i = 0; i < amountOfAgents; i++)
         if (!birbs[i].isDead)
         {
-            scores[i]++;
-            if (scores[i] >= forceDeathScore)
+            birbs[i].score++;
+            if (birbs[i].score >= forceDeathScore)
             {
                 birbs[i].isDead = true;
             }
@@ -245,35 +248,44 @@ void display()
                     //    birbs[j].isDead = true;
                 }*/
             pipes[i]->value.x = pipes[-1]->value.x + pipeDistance;
+            pipes[i]->value.height = rand() / (RAND_MAX * 1.0);
             pipes.append(pipes.pop(0));
         }
-        if (movePipes && generation % 1 == 0)
+        if (movePipes && generation % generationShow == 0)
             drawPipe(pipes[i]->value);
     }
 
     /* draw birb sight */
     // todo : maybe move this into another programm
     //        since this should only be the base game
-    Pipe temp;
-    if (showBirbSight)
+    /*if (showBirbSight)
     {
-        temp = getNextPipe(birbs[0]);
+        Pipe temp = getNextPipe(birbs[0]);
         //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
         drawOneLine(birbs[0].x / 900, birbs[0].y, temp.x + temp.width, birbs[0].y);
         drawOneLine(temp.x + temp.width, birbs[0].y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
         drawOneLine(birbs[0].x / 900, birbs[0].y, birbs[0].x / 900, -1.0);
-    }
+    }*/
 
     /* let the agent play */
     bool allDead = true;
     for (int index = 0; index < amountOfAgents; index++)
     {
+        if(birbs[index].isDead)
+            continue;
+        Pipe temp = getNextPipe(birbs[index]);
+        if (showBirbSight && generation % generationShow == 0)
+        {
+            drawOneLine(birbs[index].x / 900, birbs[index].y, temp.x + temp.width, birbs[index].y); // ditance to next pipe
+            drawOneLine(temp.x + temp.width, birbs[index].y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2); // y delta
+            //drawOneLine(birbs[index].x / 900, birbs[index].y, birbs[index].x / 900, -1.0); // distance to ground
+        }
         if (!birbs[index].isDead)
             allDead = false;
         distToNextPipe = temp.x + temp.width - birbs[index].x / 900;
-        yPosittion = birbs[index].y;
-        yOfNextHole = -1.0 + temp.height + PIPE_GAP_HEIGHT;
-        vector<double> output = agents[index].forwardPass({distToNextPipe, yPosittion, yOfNextHole});
+        //yPosittion = birbs[index].y;
+        yOfNextHole = (birbs[index].y - -1.0 + temp.height + PIPE_GAP_HEIGHT);
+        vector<double> output = agents[index].forwardPass({distToNextPipe, /*yPosittion, */yOfNextHole});
         if (output[0] > jumpingThreshold)
             jump(birbs[index]);
     }
@@ -286,16 +298,16 @@ void display()
     {
         int maxScore = 0, maxSecondScore = 0;
         Agent first = agents[0], second = agents[1];
-        for (int i = 0; i < scores.size(); i++)
+        for (int i = 0; i < birbs.size(); i++)
         {
-            if (scores[i] > maxScore)
+            if (birbs[i].score > maxScore)
             {
-                maxScore = scores[i];
+                maxScore = birbs[i].score;
                 first = agents[i];
             }
-            else if (scores[i] > maxSecondScore)
+            else if (birbs[i].score > maxSecondScore)
             {
-                maxSecondScore = scores[i];
+                maxSecondScore = birbs[i].score;
                 second = agents[i];
             }
         }
@@ -318,8 +330,9 @@ void display()
         }
     }
 
+    if(generation % generationShow == 0){
     glutSwapBuffers();
-    glFlush();
+    glFlush();}
 }
 
 void timer(int v)
@@ -330,10 +343,11 @@ void timer(int v)
 
 int main(int argc, char **argv)
 {
-    srand((unsigned)time(0));
+    srand((unsigned int)time(NULL));
+    //for(int i = 0; i < 100; i++)
+    //    std::cout << rand()/(RAND_MAX*1.0) << std::endl;
 
     /* initialization of pipes */
-    int amountOfPipes = 5;
     for (int i = 0; i < amountOfPipes; i++)
     {
         Pipe p = Pipe();
@@ -345,9 +359,8 @@ int main(int argc, char **argv)
     /* initialization of agents */
     for (int i = 0; i < amountOfAgents; i++)
     {
-        agents.push_back(Agent(3, agentNetworkTopology));
+        agents.push_back(Agent(agentInputs, agentNetworkTopology));
         birbs.push_back(Birb());
-        scores.push_back(0);
     }
 
     /* initialisation */

@@ -41,7 +41,7 @@ vector<double> generateNewGene(vector<double> gene1, vector<double> gene2, int a
 vector<double> mutate(vector<double> gene){
     vector<double> res;
     for(int i = 0; i < gene.size(); i++){
-        if(rand()/(RAND_MAX*1.0) >= 0.95)
+        if(rand()/(RAND_MAX*1.0) >= 0.98)
             res.push_back(rand()/15000.0-1);
         else
             res.push_back(gene[i]);
@@ -52,8 +52,9 @@ vector<double> mutate(vector<double> gene){
 vector<Agent> generateAgentsFromGene(int noAgents, vector<double> gene, vector<int> agentNetworkTopology)
 {
     vector<Agent> res;
+    int agentInputs = 2;
     for(int i = 0; i < noAgents; i++){
-        Agent temp = Agent(3, agentNetworkTopology); // todo : dynamic
+        Agent temp = Agent(agentInputs, agentNetworkTopology); // todo : dynamic
         temp.applyWeights(mutate(gene));
         res.push_back(temp);
     }
