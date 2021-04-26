@@ -42,7 +42,7 @@ vector<double> mutate(vector<double> gene){
     vector<double> res;
     for(int i = 0; i < gene.size(); i++){
         if(rand()/(RAND_MAX*1.0) >= 0.98)
-            res.push_back(rand()/15000.0-1);
+            res.push_back(rand()/(RAND_MAX/2.0)-1);
         else
             res.push_back(gene[i]);
     }

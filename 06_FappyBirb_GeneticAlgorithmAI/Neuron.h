@@ -14,7 +14,7 @@ using namespace std;
 }*/
 double randomDouble()
 {
-    return rand()/15000.0-1;
+    return rand()/(RAND_MAX/2.0)-1;
 }
 
 class Neuron
@@ -57,7 +57,7 @@ double Neuron::forwardPass(vector<double> input)
     }
     output += bias;
     lastNetIn = output;
-    return sigmoid(output);
+    return relu(output);
 }
 
 /*

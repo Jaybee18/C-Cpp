@@ -28,7 +28,7 @@ struct Birb
     double x = -500.0, y = 0.0;
     double velocity = 0.00;
     bool isDead = false;
-    double width = 100.0;
+    double width = 30.0;
     int score = 0;
 };
 
@@ -43,22 +43,22 @@ struct Pipe
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
 static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
-static vector<int> agentNetworkTopology = {6, 4, 1};
+static vector<int> agentNetworkTopology = {6, 6, 1};
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static bool showBirbSight = true;
 static int amountOfAgents = 200;
 static double GRAVITY = 0.0015;
 static int forceDeathScore = 5000;
-static int pipeDistance = 2;
-static int startPipeDistande = 1.8;
-static double jumpingThreshold = 0.7;
+static int pipeDistance = 1;
+static int startPipeDistande = 10.0;
+static double jumpingThreshold = 0.65;
 static int amountOfPipes = 7;
 static int generationShow = 1;
-static int agentInputs = 2;
+static int agentInputs = 4;
 static int FPS = 500;
 int bestScore = 0;
 int generation = 0;
-bool movePipes = false;
+bool movePipes = true;
 double distToNextPipe = 0.0;
 double yPosittion = 0.0;
 double yOfNextHole = 0.0;
@@ -146,7 +146,7 @@ void updateBirb(Birb &b)
     {
         b.isDead = true;
         Pipe temp = getNextPipe(b);
-        b.score = b.score / (1 + abs(b.y - (-1.0 + temp.height + PIPE_GAP_HEIGHT / 2)));
+        //b.score = b.score / (1 + abs(b.y - (-1.0 + temp.height + PIPE_GAP_HEIGHT / 2)));
     }
     if (!b.isDead)
     {
@@ -237,7 +237,8 @@ void display()
     /* draw pipes */
     for (int i = 0; i < pipes.length(); i++)
     {
-        pipes[i]->value.x -= PIPE_MOVEMENT_SPEED;
+        if(movePipes)
+            pipes[i]->value.x -= PIPE_MOVEMENT_SPEED;
         if (pipes[i]->value.x + pipes[i]->value.width < -1.0)
         {
             /*for (int j = 0; j < amountOfAgents; j++)
@@ -283,9 +284,13 @@ void display()
         if (!birbs[index].isDead)
             allDead = false;
         distToNextPipe = temp.x + temp.width - birbs[index].x / 900;
-        //yPosittion = birbs[index].y;
+        yPosittion = birbs[index].y + 1;
         yOfNextHole = (birbs[index].y - -1.0 + temp.height + PIPE_GAP_HEIGHT);
-        vector<double> output = agents[index].forwardPass({distToNextPipe, /*yPosittion, */yOfNextHole});
+        double upperBound = temp.height + PIPE_GAP_HEIGHT;
+        double lowerBound = temp.height;
+        double yVel = birbs[index].velocity;
+        double xVel = PIPE_MOVEMENT_SPEED;
+        vector<double> output = agents[index].forwardPass({distToNextPipe, yOfNextHole, yVel, xVel});
         if (output[0] > jumpingThreshold)
             jump(birbs[index]);
     }
