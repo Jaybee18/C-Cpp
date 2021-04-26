@@ -1,5 +1,5 @@
 /* compiling
- * linux   : g++ 05_opengl/FappyBirb.cpp -lglut -lGL -o 05_opengl/FappyBirb; ./05_opengl/FappyBirb
+ * linux   : g++ 06_FappyBirb_GeneticAlgorithmAI/FappyBirb.cpp -lglut -lGL -o 06_FappyBirb_GeneticAlgorithmAI/FappyBirb; ./06_FappyBirb_GeneticAlgorithmAI/FappyBirb
  * windows : g++ 06_FappyBirb_GeneticAlgorithmAI\FappyBirb.cpp -o 06_FappyBirb_GeneticAlgorithmAI\FappyBirb.exe -I"C:\MinGW\include" -L"C:\MinGW\lib" -lfreeglut -lopengl32 && 06_FappyBirb_GeneticAlgorithmAI\FappyBirb.exe
  */
 
