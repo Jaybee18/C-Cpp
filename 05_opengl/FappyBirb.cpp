@@ -123,7 +123,7 @@ void updateBirb()
 double randomDouble()
 {
     // yoinked from da net
-    return static_cast<double>(rand()) / static_cast<double>(RAND_MAX + 1);
+    return static_cast<double>(rand()) / static_cast<double>(RAND_MAX + 1.0);
 }
 
 void reset()

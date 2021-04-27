@@ -41,7 +41,7 @@ vector<double> generateNewGene(vector<double> gene1, vector<double> gene2, int a
 vector<double> mutate(vector<double> gene){
     vector<double> res;
     for(int i = 0; i < gene.size(); i++){
-        if(rand()/(RAND_MAX*1.0) >= 0.98)
+        if(rand()/(RAND_MAX*1.0) >= 0.70)
             res.push_back(rand()/(RAND_MAX/2.0)-1);
         else
             res.push_back(gene[i]);
