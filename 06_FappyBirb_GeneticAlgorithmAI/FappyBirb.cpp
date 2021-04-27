@@ -282,7 +282,7 @@ void display()
         if (!birbs[index].isDead)
             allDead = false;
         double distToNextPipe = temp.x + temp.width - birbs[index].x / 900;
-        double yPosittion = birbs[index].y + 1;
+        double yPosittion = birbs[index].y -1.0;
         double yOfNextHole = (birbs[index].y - -1.0 + temp.height + PIPE_GAP_HEIGHT);
         double upperBound = temp.height + PIPE_GAP_HEIGHT;
         double lowerBound = temp.height;
@@ -318,9 +318,11 @@ void display()
         generation++;
         vector<double> genes1 = extractWeights(first), genes2 = extractWeights(second);
         vector<double> newGene = generateNewGene(genes1, genes2, maxScore, maxSecondScore);
-        vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents, newGene, agentNetworkTopology);
+        vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents, newGene, agentNetworkTopology, agentInputs);
 
-        // todo : something here is maybe weird !!!!
+        // fucking done
+        // best 10% behalten, sodass dieses weirde mit dem besten
+        // gen der letzten generation nicht mehr nötig ist
         if (maxScore >= bestScore)
         {
             reset(newAgents);
@@ -329,7 +331,7 @@ void display()
         }
         else
         {
-            reset(generateAgentsFromGene(amountOfAgents, lastBestGene, agentNetworkTopology));
+            reset(generateAgentsFromGene(amountOfAgents, lastBestGene, agentNetworkTopology, agentInputs));
         }
     }
 

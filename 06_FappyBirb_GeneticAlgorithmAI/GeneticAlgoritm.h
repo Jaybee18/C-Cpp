@@ -49,10 +49,9 @@ vector<double> mutate(vector<double> gene){
     return res;
 }
 
-vector<Agent> generateAgentsFromGene(int noAgents, vector<double> gene, vector<int> agentNetworkTopology)
+vector<Agent> generateAgentsFromGene(int noAgents, vector<double> gene, vector<int> agentNetworkTopology, int agentInputs)
 {
     vector<Agent> res;
-    int agentInputs = 2;
     for(int i = 0; i < noAgents; i++){
         Agent temp = Agent(agentInputs, agentNetworkTopology); // todo : dynamic
         temp.applyWeights(mutate(gene));
