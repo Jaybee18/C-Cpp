@@ -11,11 +11,15 @@ public:
     vector<double> forwardPass(vector<double> inputs);
     vector<vector<Neuron>> getNeurons();
     void applyWeights(vector<double> newWeights);
+    int score;
+    bool isDead;
     ~Agent();
 };
 
 Agent::Agent(int noInputs, vector<int> layers)
 {
+    score = 0;
+    isDead = false;
     int lastInputs = noInputs;
     for (int i = layers.size() - 1; i >= 0; i--)
     {

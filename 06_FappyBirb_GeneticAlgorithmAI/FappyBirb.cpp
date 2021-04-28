@@ -12,7 +12,6 @@
 #include <math.h>
 #include <iostream>
 #include "plist.h"
-//#include "NeuralNetwork.h" // has to be removed bc of GeneticAlgoritm.h
 #include "GeneticAlgoritm.h"
 
 #define drawOneLine(x1, y1, x2, y2) \
@@ -27,9 +26,7 @@ struct Birb
 {
     double x = -500.0, y = 0.0;
     double velocity = 0.00;
-    bool isDead = false;
     double width = 100.0;
-    int score = 0;
 };
 
 /* pipes */
@@ -138,15 +135,15 @@ Pipe getNextPipe(Birb b)
     return currentClosest;
 }
 
-void updateBirb(Birb &b)
+void updateBirb(Birb &b, Agent &a)
 {
     if (b.y <= (WINDOW_HEIGHT - b.width) / -WINDOW_HEIGHT || birbTouchesPipe(b) || b.y >= (WINDOW_HEIGHT - b.width) / WINDOW_HEIGHT)
     {
-        b.isDead = true;
+        a.isDead = true;
         Pipe temp = getNextPipe(b);
         //b.score = b.score / (1 + abs(b.y - (-1.0 + temp.height + PIPE_GAP_HEIGHT / 2)));
     }
-    if (!b.isDead)
+    if (!a.isDead)
     {
         b.y += b.velocity;
         b.velocity -= GRAVITY;
@@ -220,15 +217,15 @@ void display()
         glClear(GL_COLOR_BUFFER_BIT);
 
     /* draw da birb */
-    for (Birb &b : birbs)
-        updateBirb(b);
+    for (int i = 0; i < birbs.size(); i++)
+        updateBirb(birbs[i], agents[i]);
     for (int i = 0; i < amountOfAgents; i++)
-        if (!birbs[i].isDead)
+        if (!agents[i].isDead)
         {
-            birbs[i].score++;
-            if (birbs[i].score >= forceDeathScore)
+            agents[i].score++;
+            if (agents[i].score >= forceDeathScore)
             {
-                birbs[i].isDead = true;
+                agents[i].isDead = true;
             }
         }
 
@@ -270,7 +267,7 @@ void display()
     bool allDead = true;
     for (int index = 0; index < amountOfAgents; index++)
     {
-        if(birbs[index].isDead)
+        if(agents[index].isDead)
             continue;
         Pipe temp = getNextPipe(birbs[index]);
         if (showBirbSight && generation % generationShow == 0)
@@ -279,7 +276,7 @@ void display()
             drawOneLine(temp.x + temp.width, birbs[index].y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2); // y delta
             //drawOneLine(birbs[index].x / 900, birbs[index].y, birbs[index].x / 900, -1.0); // distance to ground
         }
-        if (!birbs[index].isDead)
+        if (!agents[index].isDead)
             allDead = false;
         double distToNextPipe = temp.x + temp.width - birbs[index].x / 900;
         double yPosittion = birbs[index].y -1.0;
@@ -299,34 +296,20 @@ void display()
      */
     if (allDead)
     {
-        int maxScore = 0, maxSecondScore = 0;
-        Agent first = agents[0], second = agents[1];
-        for (int i = 0; i < birbs.size(); i++)
-        {
-            if (birbs[i].score > maxScore)
-            {
-                maxScore = birbs[i].score;
-                first = agents[i];
-            }
-            else if (birbs[i].score > maxSecondScore)
-            {
-                maxSecondScore = birbs[i].score;
-                second = agents[i];
-            }
-        }
-        std::cout << "Generation : " << generation << " || Score : " << maxScore << " || Total Max Score : " << bestScore << std::endl;
+        vector<Agent> bestOfGen = getBest(agents, 0.10);
+        std::cout << "Generation : " << generation << " || Score : " << bestOfGen[0].score << " || Total Max Score : " << bestScore << std::endl;
         generation++;
-        vector<double> genes1 = extractWeights(first), genes2 = extractWeights(second);
-        vector<double> newGene = generateNewGene(genes1, genes2, maxScore, maxSecondScore);
+        vector<double> genes1 = extractWeights(bestOfGen[0]), genes2 = extractWeights(bestOfGen[1]);
+        vector<double> newGene = generateNewGene(genes1, genes2, bestOfGen[0].score, bestOfGen[1].score);
         vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents, newGene, agentNetworkTopology, agentInputs);
 
         // fucking done
         // best 10% behalten, sodass dieses weirde mit dem besten
         // gen der letzten generation nicht mehr nötig ist
-        if (maxScore >= bestScore)
+        if (bestOfGen[0].score >= bestScore)
         {
             reset(newAgents);
-            bestScore = maxScore; // experimental
+            bestScore = bestOfGen[0].score; // experimental
             lastBestGene = genes1;
         }
         else
