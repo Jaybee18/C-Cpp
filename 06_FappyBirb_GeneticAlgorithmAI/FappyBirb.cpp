@@ -39,24 +39,24 @@ struct Pipe
 
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
-static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
+static double PIPE_GAP_HEIGHT = 600.0 / WINDOW_HEIGHT;
 static vector<int> agentNetworkTopology = {6, 1};
 static double PIPE_MOVEMENT_SPEED = 0.008;
-static bool showBirbSight = true;
+static bool showBirbSight = false;
+static bool showBirbs = true;
 static int amountOfAgents = 700;
 static double GRAVITY = 0.0015;
 static int forceDeathScore = 5000;
 static int pipeDistance = 1;
 static int startPipeDistande = 1.8;
 static double jumpingThreshold = 0.6;
-static int amountOfPipes = 7;
+static int amountOfPipes = 4;
 static int generationShow = 1;
 static int agentInputs = 3;
-static int FPS = 270;
+static int FPS = 500;
 int bestScore = 0;
 int generation = 0;
 bool movePipes = true;
-vector<double> lastBestGene;
 
 /* objects */
 Pipe currentLastPipe;
@@ -65,25 +65,23 @@ vector<Agent> agents;
 vector<Birb> birbs;
 
 /* shapes and figures */
-void drawCircle(int x, double y, int radius)
+void drawCircle(int x, double y, int diameter)
 {
-    return;
     double center[2] = {x * 1.0, y * 1.0};
     glBegin(GL_LINE_LOOP);
     glColor3f(0, 1, 1);
     for (int i = 0; i < 360; i++)
     {
-        double yDelta = radius * sin(i);
-        double xDelta = radius * cos(i);
-        double point[2] = {center[0] + xDelta, center[1] + yDelta};
-        glVertex3f(point[0] / WINDOW_WIDTH, point[1] / WINDOW_HEIGHT, 0);
+        double yDelta = diameter/2 * sin(i);
+        double xDelta = diameter/2 * cos(i);
+        glVertex3f((center[0] + xDelta) / WINDOW_WIDTH, (center[1] + yDelta) / WINDOW_HEIGHT, 0);
     }
     glEnd();
 }
 
 void drawPipe(Pipe p)
 {
-    /* lower half */
+    /* lower half 
     glBegin(GL_POLYGON);
     glColor3f(0, 1, 0);
     glVertex3f(p.x, -1.0, 0);
@@ -91,8 +89,26 @@ void drawPipe(Pipe p)
     glVertex3f(p.x + p.width, -1.0 + p.height, 0);
     glVertex3f(p.x, -1.0 + p.height, 0);
     glEnd();
-    /* upper half */
+    /* upper half 
     glBegin(GL_POLYGON);
+    glColor3f(0, 1, 0);
+    glVertex3f(p.x, 1.0, 0);
+    glVertex3f(p.x + p.width, 1.0, 0);
+    glVertex3f(p.x + p.width, -1.0 + p.height + PIPE_GAP_HEIGHT, 0);
+    glVertex3f(p.x, -1.0 + p.height + PIPE_GAP_HEIGHT, 0);
+    glEnd();*/
+    
+    /* lower half */
+    glBegin(GL_LINE_LOOP);
+    glColor3f(0, 1, 0);
+    glVertex3f(p.x, -1.0, 0);
+    glVertex3f(p.x + p.width, -1.0, 0);
+    glVertex3f(p.x + p.width, -1.0 + p.height, 0);
+    glVertex3f(p.x, -1.0 + p.height, 0);
+    glEnd();
+
+    /* upper half */
+    glBegin(GL_LINE_LOOP);
     glColor3f(0, 1, 0);
     glVertex3f(p.x, 1.0, 0);
     glVertex3f(p.x + p.width, 1.0, 0);
@@ -140,7 +156,6 @@ void updateBirb(Birb &b, Agent &a)
     {
         a.isDead = true;
         Pipe temp = getNextPipe(b);
-        //b.score = b.score / (1 + abs(b.y - (-1.0 + temp.height + PIPE_GAP_HEIGHT / 2)));
     }
     if (!a.isDead)
     {
@@ -151,7 +166,7 @@ void updateBirb(Birb &b, Agent &a)
     {
         return;
     }
-    if (generation % generationShow == 0)
+    if (generation % generationShow == 0 && showBirbs)
     {
         glPushMatrix();
         glTranslatef(0, b.y, 0);
@@ -215,19 +230,6 @@ void display()
     if (generation % generationShow == 0)
         glClear(GL_COLOR_BUFFER_BIT);
 
-    /* draw da birb */
-    for (int i = 0; i < birbs.size(); i++)
-        updateBirb(birbs[i], agents[i]);
-    for (int i = 0; i < amountOfAgents; i++)
-        if (!agents[i].isDead)
-        {
-            agents[i].score++;
-            if (agents[i].score >= forceDeathScore)
-            {
-                agents[i].isDead = true;
-            }
-        }
-
     /* draw pipes */
     for (int i = 0; i < pipes.length(); i++)
     {
@@ -235,13 +237,6 @@ void display()
             pipes[i]->value.x -= PIPE_MOVEMENT_SPEED;
         if (pipes[i]->value.x + pipes[i]->value.width < -1.0)
         {
-            /*for (int j = 0; j < amountOfAgents; j++)
-                if (!birbs[j].isDead)
-                {
-                    //scores[j]++;
-                    //if (scores[j] >= deathMaxScore)
-                    //    birbs[j].isDead = true;
-                }*/
             pipes[i]->value.x = pipes[-1]->value.x + pipeDistance;
             pipes[i]->value.height = rand() / (RAND_MAX * 1.0);
             pipes.append(pipes.pop(0));
@@ -250,42 +245,55 @@ void display()
             drawPipe(pipes[i]->value);
     }
 
-    /* draw birb sight */
-    // todo : maybe move this into another programm
-    //        since this should only be the base game
-    /*if (showBirbSight)
-    {
-        Pipe temp = getNextPipe(birbs[0]);
-        //drawOneLine(birb.x / 900, birb.y, temp.x, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
-        drawOneLine(birbs[0].x / 900, birbs[0].y, temp.x + temp.width, birbs[0].y);
-        drawOneLine(temp.x + temp.width, birbs[0].y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);
-        drawOneLine(birbs[0].x / 900, birbs[0].y, birbs[0].x / 900, -1.0);
-    }*/
-
     /* let the agent play */
     bool allDead = true;
+    Pipe temp = getNextPipe(birbs[0]);
     for (int index = 0; index < amountOfAgents; index++)
     {
-        if (agents[index].isDead)
+        Agent *currentAgent = &agents[index];
+        Birb *currentBirb = &birbs[index];
+
+        if(currentAgent->isDead)
             continue;
-        Pipe temp = getNextPipe(birbs[index]);
+
+        /* draw and move da brib */
+        updateBirb(*currentBirb, *currentAgent);
+        if (!currentAgent->isDead)
+        {
+            currentAgent->score++;
+            if (currentAgent->score >= forceDeathScore)
+                currentAgent->isDead = true;
+            allDead = false;
+        }else{continue;}
+
+        /* draw lines to show what the
+         * agents get as their input 
+         */
         if (showBirbSight && generation % generationShow == 0)
         {
-            drawOneLine(birbs[index].x / 900 - birbs[index].width/900, birbs[index].y, temp.x + temp.width, birbs[index].y);                          // ditance to next pipe
-            drawOneLine(temp.x + temp.width, birbs[index].y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2); // y delta
+            drawOneLine(currentBirb->x / 900 - currentBirb->width / 900, currentBirb->y, temp.x + temp.width, currentBirb->y); // ditance to next pipe
+            drawOneLine(temp.x + temp.width, currentBirb->y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2);   // y delta
         }
-        if (!agents[index].isDead)
-            allDead = false;
-        double distToNextPipe = temp.x + temp.width - birbs[index].x / 900 - birbs[index].width/900/2;
-        double yPosition = birbs[index].y - 1.0;
-        double yOfNextHole = (birbs[index].y - -1.0 + temp.height + PIPE_GAP_HEIGHT);
-        double upperBound = temp.height + PIPE_GAP_HEIGHT;
-        double lowerBound = temp.height;
-        double yVel = birbs[index].velocity;
-        double xVel = PIPE_MOVEMENT_SPEED;
-        vector<double> output = agents[index].forwardPass({distToNextPipe, yOfNextHole, yPosition});
+
+        /* all possible inputs for the agents are
+         * defined here so that a hotswap is as
+         * easy as possible
+         */
+        double distToNextPipe = temp.x + temp.width - currentBirb->x / 900 - currentBirb->width / 900 / 2;
+        double yPosition = currentBirb->y - 1.0;
+        double yOfNextHole = (currentBirb->y - -1.0 + temp.height + PIPE_GAP_HEIGHT);
+        //double upperBound = temp.height + PIPE_GAP_HEIGHT;
+        //double lowerBound = temp.height;
+        //double yVel = currentBirb->velocity;
+        //double xVel = PIPE_MOVEMENT_SPEED;
+
+        /* the agent gets given the his inputs
+         * and his output determines whether 
+         * or not it jumps
+         */
+        vector<double> output = currentAgent->forwardPass({distToNextPipe, yOfNextHole, yPosition});
         if (output[0] > jumpingThreshold)
-            jump(birbs[index]);
+            jump(*currentBirb);
     }
 
     /* when all agents are dead
@@ -294,12 +302,31 @@ void display()
      */
     if (allDead)
     {
+        /* 
+         * select the best 5% of the last generation
+         * to safely and without mutation pass into
+         * the next generation, so that progress 
+         * isn't lost 
+         */
         vector<Agent> bestOfGen = getBest(agents, 0.05);
+
         std::cout << "Generation : " << generation << " || Score : " << bestOfGen[0].score << std::endl;
         generation++;
+
+        /*
+         * The best two agents are selected to create
+         * a new gene from which all other agents 
+         * for the next generation are generated.
+         * During that generating process they
+         * can mutate
+         */
         vector<double> genes1 = extractWeights(bestOfGen[0]), genes2 = extractWeights(bestOfGen[1]);
         vector<double> newGene = generateNewGene(genes1, genes2, bestOfGen[0].score, bestOfGen[1].score);
         vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents - bestOfGen.size(), newGene, agentNetworkTopology, agentInputs);
+
+        /* add the best 5% of last generation to 
+         * the new generation
+         */
         for (Agent a : bestOfGen)
         {
             /* !! reset all the agents attributes !!*/
@@ -311,7 +338,6 @@ void display()
             a.score = 0;
             newAgents.push_back(a);
         }
-
         reset(newAgents);
     }
 
@@ -331,8 +357,6 @@ void timer(int v)
 int main(int argc, char **argv)
 {
     srand((unsigned int)time(NULL));
-    //for(int i = 0; i < 100; i++)
-    //    std::cout << rand()/(RAND_MAX*1.0) << std::endl;
 
     /* initialization of pipes */
     for (int i = 0; i < amountOfPipes; i++)
@@ -360,7 +384,6 @@ int main(int argc, char **argv)
 
     glutDisplayFunc(display);
     glutTimerFunc(100, timer, 0);
-    //glutMouseFunc(mouse);
 
     glutMainLoop();
     return 0;
