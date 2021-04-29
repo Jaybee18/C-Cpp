@@ -40,14 +40,14 @@ struct Pipe
 /* general variables/constants */
 static int WINDOW_WIDTH = 900, WINDOW_HEIGHT = 900;
 static double PIPE_GAP_HEIGHT = 800.0 / WINDOW_HEIGHT;
-static vector<int> agentNetworkTopology = {6, 6, 1};
+static vector<int> agentNetworkTopology = {6, 1};
 static double PIPE_MOVEMENT_SPEED = 0.008;
 static bool showBirbSight = true;
 static int amountOfAgents = 700;
 static double GRAVITY = 0.0015;
 static int forceDeathScore = 5000;
 static int pipeDistance = 1;
-static int startPipeDistande = 1.0;
+static int startPipeDistande = 1.8;
 static double jumpingThreshold = 0.6;
 static int amountOfPipes = 7;
 static int generationShow = 1;
@@ -61,8 +61,7 @@ vector<double> lastBestGene;
 /* objects */
 Pipe currentLastPipe;
 list<Pipe> pipes;
-//Birb birb = Birb();
-vector<Agent> agents; // = Agent(3, {4, 4, 1});
+vector<Agent> agents;
 vector<Birb> birbs;
 
 /* shapes and figures */
@@ -213,7 +212,7 @@ void jump(Birb &b)
 /* glut functions */
 void display()
 {
-    if(generation % generationShow == 0)
+    if (generation % generationShow == 0)
         glClear(GL_COLOR_BUFFER_BIT);
 
     /* draw da birb */
@@ -232,7 +231,7 @@ void display()
     /* draw pipes */
     for (int i = 0; i < pipes.length(); i++)
     {
-        if(movePipes)
+        if (movePipes)
             pipes[i]->value.x -= PIPE_MOVEMENT_SPEED;
         if (pipes[i]->value.x + pipes[i]->value.width < -1.0)
         {
@@ -267,25 +266,24 @@ void display()
     bool allDead = true;
     for (int index = 0; index < amountOfAgents; index++)
     {
-        if(agents[index].isDead)
+        if (agents[index].isDead)
             continue;
         Pipe temp = getNextPipe(birbs[index]);
         if (showBirbSight && generation % generationShow == 0)
         {
-            drawOneLine(birbs[index].x / 900, birbs[index].y, temp.x + temp.width, birbs[index].y); // ditance to next pipe
+            drawOneLine(birbs[index].x / 900 - birbs[index].width/900, birbs[index].y, temp.x + temp.width, birbs[index].y);                          // ditance to next pipe
             drawOneLine(temp.x + temp.width, birbs[index].y, temp.x + temp.width, -1.0 + temp.height + PIPE_GAP_HEIGHT / 2); // y delta
-            //drawOneLine(birbs[index].x / 900, birbs[index].y, birbs[index].x / 900, -1.0); // distance to ground
         }
         if (!agents[index].isDead)
             allDead = false;
-        double distToNextPipe = temp.x + temp.width - birbs[index].x / 900;
-        double yPosittion = birbs[index].y -1.0;
+        double distToNextPipe = temp.x + temp.width - birbs[index].x / 900 - birbs[index].width/900/2;
+        double yPosition = birbs[index].y - 1.0;
         double yOfNextHole = (birbs[index].y - -1.0 + temp.height + PIPE_GAP_HEIGHT);
         double upperBound = temp.height + PIPE_GAP_HEIGHT;
         double lowerBound = temp.height;
         double yVel = birbs[index].velocity;
         double xVel = PIPE_MOVEMENT_SPEED;
-        vector<double> output = agents[index].forwardPass({distToNextPipe, yOfNextHole, yPosittion});
+        vector<double> output = agents[index].forwardPass({distToNextPipe, yOfNextHole, yPosition});
         if (output[0] > jumpingThreshold)
             jump(birbs[index]);
     }
@@ -296,31 +294,32 @@ void display()
      */
     if (allDead)
     {
-        vector<Agent> bestOfGen = getBest(agents, 0.10);
-        std::cout << "Generation : " << generation << " || Score : " << bestOfGen[0].score << " || Total Max Score : " << bestScore << std::endl;
+        vector<Agent> bestOfGen = getBest(agents, 0.05);
+        std::cout << "Generation : " << generation << " || Score : " << bestOfGen[0].score << std::endl;
         generation++;
         vector<double> genes1 = extractWeights(bestOfGen[0]), genes2 = extractWeights(bestOfGen[1]);
         vector<double> newGene = generateNewGene(genes1, genes2, bestOfGen[0].score, bestOfGen[1].score);
-        vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents, newGene, agentNetworkTopology, agentInputs);
+        vector<Agent> newAgents = generateAgentsFromGene(amountOfAgents - bestOfGen.size(), newGene, agentNetworkTopology, agentInputs);
+        for (Agent a : bestOfGen)
+        {
+            /* !! reset all the agents attributes !!*/
+            /* after playing all the agents will have their
+             * isDead attribute set on true. So without resetting
+             * they will all just die at the beginning providing
+             * no progress to the generation */
+            a.isDead = false;
+            a.score = 0;
+            newAgents.push_back(a);
+        }
 
-        // fucking done
-        // best 10% behalten, sodass dieses weirde mit dem besten
-        // gen der letzten generation nicht mehr nötig ist
-        if (bestOfGen[0].score >= bestScore)
-        {
-            reset(newAgents);
-            bestScore = bestOfGen[0].score; // experimental
-            lastBestGene = genes1;
-        }
-        else
-        {
-            reset(generateAgentsFromGene(amountOfAgents, lastBestGene, agentNetworkTopology, agentInputs));
-        }
+        reset(newAgents);
     }
 
-    if(generation % generationShow == 0){
-    glutSwapBuffers();
-    glFlush();}
+    if (generation % generationShow == 0)
+    {
+        glutSwapBuffers();
+        glFlush();
+    }
 }
 
 void timer(int v)

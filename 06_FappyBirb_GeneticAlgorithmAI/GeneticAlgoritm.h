@@ -23,6 +23,11 @@ vector<double> generateNewGene(vector<double> gene1, vector<double> gene2, int a
     agent1 *= agent1;
     agent2 *= agent2;
     double prob1 = agent1 / (agent1 + agent2), prob2 = agent2 / (agent1 + agent2);
+    
+    /* just testing */
+    prob1 = 0.5;
+    prob2 = 0.5;
+
     vector<double> res;
     for (int i = 0; i < gene1.size(); i++)
     {
@@ -44,7 +49,7 @@ vector<double> mutate(vector<double> gene)
     vector<double> res;
     for (int i = 0; i < gene.size(); i++)
     {
-        if (rand() / (RAND_MAX * 1.0) >= 0.80)
+        if (rand() / (RAND_MAX * 1.0) >= 0.70)
             res.push_back(rand() / (RAND_MAX / 2.0) - 1);
         else
             res.push_back(gene[i]);
