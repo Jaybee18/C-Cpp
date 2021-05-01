@@ -24,19 +24,24 @@ private:
     vector<vector<Neuron>> neurons;
 
 public:
+    bool isDead;
     Agent(int inputCount, vector<int> topology);
     void setScore(int newScore);
     int getScore();
     vector<double> forwardPass(vector<double> inputs);
     vector<double> getGene();
     void setGene(vector<double> gene);
+    void reset();
+    void kill();
     ~Agent();
 };
 
 Agent::Agent(int inputCount, vector<int> topology)
 {
+    isDead = false;
     this->inputCount = inputCount;
     this->topology = topology;
+    score = 0;
 
     int lastInputs = inputCount;
     for (int layerIndex = 0; layerIndex < topology.size(); layerIndex++)
@@ -88,13 +93,27 @@ void Agent::setGene(vector<double> gene)
 {
     int counter = 0;
     for (vector<Neuron> &layer : neurons)
+    {
         for (Neuron &n : layer)
-            for (int i = 0; i < n.getWeights().size(); i++)
+        {
+            for (int i = 0; i < n.getWeights().size()-1; i++)
             {
                 n.setWeight(i, gene[counter]);
                 counter++;
             }
+            n.setBias(gene[counter]);
+            counter++;
+        }
+    }
 }
+
+void Agent::reset()
+{
+    score = 0;
+    isDead = false;
+}
+
+void Agent::kill() { isDead = true; }
 
 Agent::~Agent()
 {

@@ -31,6 +31,7 @@ public:
     vector<double> getWeights();
     void setWeight(int index, double w);
     void show();
+    void setBias(double newBias);
     ~Neuron();
 };
 
@@ -103,6 +104,8 @@ void Neuron::setWeight(int index, double w)
 {
     weights[index] = w;
 }
+
+void Neuron::setBias(double newBias){bias = newBias;}
 
 Neuron::~Neuron()
 {
