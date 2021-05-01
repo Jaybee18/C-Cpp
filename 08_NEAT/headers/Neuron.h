@@ -94,7 +94,9 @@ void Neuron::updateWeights()
 
 vector<double> Neuron::getWeights()
 {
-    return weights;
+    vector<double> temp = weights;
+    temp.push_back(bias);
+    return temp;
 }
 
 void Neuron::setWeight(int index, double w)
