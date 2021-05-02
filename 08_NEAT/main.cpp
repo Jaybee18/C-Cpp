@@ -59,7 +59,6 @@ int generation = 0;
 bool movePipes = true;
 
 /* objects */
-Pipe currentLastPipe;
 list<Pipe> pipes;
 vector<Birb> birbs;
 NEAT neat;
@@ -81,23 +80,6 @@ void drawCircle(int x, double y, int diameter)
 
 void drawPipe(Pipe p)
 {
-    /* lower half 
-    glBegin(GL_POLYGON);
-    glColor3f(0, 1, 0);
-    glVertex3f(p.x, -1.0, 0);
-    glVertex3f(p.x + p.width, -1.0, 0);
-    glVertex3f(p.x + p.width, -1.0 + p.height, 0);
-    glVertex3f(p.x, -1.0 + p.height, 0);
-    glEnd();
-    /* upper half 
-    glBegin(GL_POLYGON);
-    glColor3f(0, 1, 0);
-    glVertex3f(p.x, 1.0, 0);
-    glVertex3f(p.x + p.width, 1.0, 0);
-    glVertex3f(p.x + p.width, -1.0 + p.height + PIPE_GAP_HEIGHT, 0);
-    glVertex3f(p.x, -1.0 + p.height + PIPE_GAP_HEIGHT, 0);
-    glEnd();*/
-
     /* lower half */
     glBegin(GL_LINE_LOOP);
     glColor3f(0, 1, 0);
@@ -178,7 +160,7 @@ void display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    /* draw pipes */
+    /* update and draw pipes */
     for (int i = 0; i < pipes.length(); i++)
     {
         if (movePipes)
@@ -205,18 +187,21 @@ void display()
         double yOfNextHole = (birbs[i].y - -1.0 + nexPipe.height + PIPE_GAP_HEIGHT);
         double out = neat.getSingleAgentOutput(i, {distToNextPipe, yPosition, yOfNextHole})[0];
 
-        /* controlling the agents death and making moves */
+        /* jump if the output is high enough */
         if (out > jumpingThreshold)
             jump(birbs[i]);
         
-        /* update the birb */
+        /* update and draw the birb */
         updateBirb(i);
         neat.increaseScore(i);
     }
 
     if (neat.allDead())
     {
+        /* generate a new generation of agents */
         neat.generateNewGeneration();
+
+        /* reset the birbs and the pipes positions */
         for (int i = 0; i < amountOfPipes; i++)
         {
             Pipe *p = &(pipes[i]->value);
