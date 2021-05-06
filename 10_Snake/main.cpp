@@ -45,7 +45,6 @@ void replaceFood(){
 
 void drawSquare(float x, float y, float width, float height){
     glBegin(GL_LINE_LOOP);
-    glColor3f(1, 0, 0);
     glVertex3f(x/WINDOW_WIDTH, y/WINDOW_HEIGHT, 0);
     glVertex3f(x/WINDOW_WIDTH + width / WINDOW_WIDTH, y/WINDOW_HEIGHT, 0);
     glVertex3f(x/WINDOW_WIDTH + width / WINDOW_WIDTH, y/WINDOW_HEIGHT + height / WINDOW_HEIGHT, 0);
@@ -61,9 +60,10 @@ void display(){
         return;
 
     /* draw the food */
+    glColor3f(1, 0, 0);
     drawSquare(currentFoodPos[0], currentFoodPos[1], squareSize, squareSize);
 
-    /* draw the snake */
+    /* update the snake */
     if(snake[0]->value.x == currentFoodPos[0] && snake[0]->value.y == currentFoodPos[1]){
         body_part temp = body_part();
         temp.x = 0;
@@ -76,13 +76,19 @@ void display(){
     }
     snake[0]->value.x += vel[0]*squareSize;
     snake[0]->value.y += vel[1]*squareSize;
+
+    /*draw the snake */
+    glColor3f(1, 1, 1);
     for(int body_index = 0; body_index < snake.length(); body_index++)
         drawSquare(snake[body_index]->value.x, snake[body_index]->value.y, squareSize, squareSize);
     
     /* check if snake is dead */
     body_part first = snake[0]->value;
-    if(first.x < -WINDOW_WIDTH || first.x > WINDOW_WIDTH || first.y < -WINDOW_HEIGHT || first.y > WINDOW_HEIGHT){
+    if(first.x < -WINDOW_WIDTH || first.x > WINDOW_WIDTH || first.y < -WINDOW_HEIGHT || first.y > WINDOW_HEIGHT)
         dead = true;
+    for(int i = 1; i < snake.length(); i++){
+        if(first.x == snake[i]->value.x && first.y == snake[i]->value.y)
+            dead = true;
     }
 
     glutSwapBuffers();
