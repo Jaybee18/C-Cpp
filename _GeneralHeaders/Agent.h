@@ -8,8 +8,8 @@ using std::vector;
  * based on inputs (like a normal neural network)
  * but can also extract it's weights and 
  * biases so that they can be evolved
- * and crossed with others. The new so
- * called genes can then be applied by 
+ * and crossed with others. The new, so
+ * called genes, can then be applied by 
  * the Agent.
  * 
  * The topology parameter should be like this:
@@ -25,6 +25,7 @@ private:
 
 public:
     bool isDead;
+    Agent(){};
     Agent(int inputCount, vector<int> topology);
     void setScore(int newScore);
     int getScore();
