@@ -19,11 +19,12 @@ struct body_part
 
 /* general constants/variables */
 static int WINDOW_WIDTH = 600, WINDOW_HEIGHT = 600;
-static int FPS = 10;
+static int FPS = 60;
 static int squareSize = 60;
 bool dead = false;
 int currentFoodPos[2] = {0, 0};
 int vel[2] = {1, 0};
+//vector<list<body_part>> snakes;
 list<body_part> snake;
 Agent agent;
 
@@ -42,6 +43,7 @@ void reset(){
     temp.y = 0;
     snake.append(temp);
     dead = false;
+    agent = Agent(4, {6, 6, 4}); // TEMPORARY
     replaceFood();
 }
 
@@ -68,15 +70,20 @@ void display()
     drawSquare(currentFoodPos[0], currentFoodPos[1], squareSize, squareSize);
 
     /* update the snake */
+    // inputs
     body_part head = snake[0]->value;
     double leftFood = 0;
     if(currentFoodPos[1] == head.y && currentFoodPos[0] < head.x)
         leftFood = 1;
     double rightFood = 0;
     if(currentFoodPos[1] == head.y && currentFoodPos[0] > head.x)
-        rightFood = 1; // todo FINISH
+        rightFood = 1;
     double aboveFood = 0;
+    if(currentFoodPos[1] > head.y && currentFoodPos[0] == head.x)
+        aboveFood = 1;
     double underFood = 0;
+    if(currentFoodPos[1] < head.y && currentFoodPos[0] == head.x)
+        underFood = 1;
     vector<double> output = agent.forwardPass({leftFood, rightFood, aboveFood, underFood});
     int indexOfLargest = 0;
     double valueOfLargest = 0.0;
@@ -109,7 +116,7 @@ void display()
     default:
         break;
     }
-
+    // check if snake has eaten food
     if (snake[0]->value.x == currentFoodPos[0] && snake[0]->value.y == currentFoodPos[1])
     {
         body_part temp = body_part();
@@ -118,6 +125,7 @@ void display()
         snake.append(temp);
         replaceFood();
     }
+    // update snakes positions
     for (int i = snake.length() - 1; i > 0; i--)
     {
         snake[i]->value = snake[i - 1]->value;
