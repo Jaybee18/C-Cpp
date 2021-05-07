@@ -37,7 +37,7 @@ public:
     ~NEAT();
 };
 
-NEAT::NEAT(){}
+NEAT::NEAT() {}
 
 NEAT::NEAT(double fds)
 {
@@ -59,6 +59,8 @@ NEAT::NEAT(double fds, double mutationRate)
 
 void NEAT::initializeAgents(int agentCount, int agentInputCount, vector<int> topology)
 {
+    _allDead = false;
+    deadAgents = 0;
     agentInputs = agentInputCount;
     amount_of_agents = agentCount;
     networkTopology = topology;
@@ -68,6 +70,8 @@ void NEAT::initializeAgents(int agentCount, int agentInputCount, vector<int> top
 
 void NEAT::initializeAgents(int agentCount, int agentInputCount, vector<int> topology, double elitePercent)
 {
+    _allDead = false;
+    deadAgents = 0;
     agentInputs = agentInputCount;
     this->elitePercent = elitePercent;
     amount_of_agents = agentCount;
@@ -91,6 +95,7 @@ vector<vector<double>> NEAT::getOutput(vector<vector<double>> inputs)
 
 void NEAT::generateNewGeneration()
 {
+    return;
     deadAgents = 0;
     _allDead = false;
     /* sort all agents by score */
@@ -114,19 +119,28 @@ void NEAT::generateNewGeneration()
     /* isolate the elite */
     int iterations = tempAgents.size() * elitePercent;
     vector<Agent> elite;
-    for (int i = 0; i < iterations; i++)
+    if (iterations < 2)
     {
-        tempAgents[i].reset();
-        elite.push_back(tempAgents[i]);
+        tempAgents[0].reset();
+        elite.push_back(tempAgents[0]);
+        elite.push_back(tempAgents[0]);
     }
-    
+    else
+    {
+        for (int i = 0; i < iterations; i++)
+        {
+            tempAgents[i].reset();
+            elite.push_back(tempAgents[i]);
+        }
+    }
+
     /* generate the rest of the new generation */
     vector<double> newGene = generateNewGene(elite[0], elite[1]);
     iterations = amount_of_agents - iterations;
     vector<Agent> newGen = generateAgentsFromGene(iterations, newGene);
     for (Agent a : elite)
         newGen.push_back(a);
-    
+
     /* replace the old generation with the newer */
     agents = newGen;
 }
@@ -208,6 +222,7 @@ void NEAT::increaseScore(int agentIndex)
         killAgent(agentIndex);
 }
 
-vector<double> NEAT::getSingleAgentOutput(int agentIndex, vector<double> input){
+vector<double> NEAT::getSingleAgentOutput(int agentIndex, vector<double> input)
+{
     return agents[agentIndex].forwardPass(input);
 }

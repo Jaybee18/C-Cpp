@@ -5,4 +5,4 @@ if __name__ == "__main__":
     folders = os.listdir()
     ids = list(map(lambda x: str(x)[:2], folders))
     indexOfFolder = ids.index(projectId)
-    os.system(f"g++ {folders[indexOfFolder]}/main.cpp -o {folders[indexOfFolder]}/main.exe -I\"C:\\MinGW\\include\" -L\"C:\\MinGW\\lib\" -lfreeglut -lopengl32 && {folders[indexOfFolder]}\\main.exe");
+    print(os.system(f"g++ {folders[indexOfFolder]}/main.cpp -o {folders[indexOfFolder]}/main.exe -I\"C:\\MinGW\\include\" -L\"C:\\MinGW\\lib\" -lfreeglut -lopengl32 && {folders[indexOfFolder]}\\main.exe"))
