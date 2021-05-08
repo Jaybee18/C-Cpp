@@ -95,7 +95,6 @@ vector<vector<double>> NEAT::getOutput(vector<vector<double>> inputs)
 
 void NEAT::generateNewGeneration()
 {
-    return;
     deadAgents = 0;
     _allDead = false;
     /* sort all agents by score */
@@ -115,6 +114,8 @@ void NEAT::generateNewGeneration()
             }
         }
     }
+    std::cout << "Generation : " << generation << " | Score : " << tempAgents[0].getScore() << std::endl;
+    generation++;
 
     /* isolate the elite */
     int iterations = tempAgents.size() * elitePercent;
@@ -147,6 +148,8 @@ void NEAT::generateNewGeneration()
 
 void NEAT::killAgent(int agentIndex)
 {
+    if(isAgentDead(agentIndex))
+        return;
     agents[agentIndex].kill();
     deadAgents++;
     if (deadAgents == amount_of_agents)

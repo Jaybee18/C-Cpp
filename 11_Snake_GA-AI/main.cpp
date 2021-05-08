@@ -21,14 +21,14 @@ struct body_part
 
 /* general constants/variables */
 static int WINDOW_WIDTH = 600, WINDOW_HEIGHT = 600;
-static int FPS = 10;
-static int squareSize = 60;
+static int FPS = 100;
+static int squareSize = 50;
 static int forceDeathScore = 100;
-static int forceDeathFrames = 100;
-static vector<int> networkTopology = {6, 6, 4};
-static int amountOfAgents = 10;
-static int agentInputs = 4;
-int frames = 0;
+static int maxStepsWithoutFood = 300;
+static vector<int> networkTopology = {16, 8, 4};
+static int amountOfAgents = 1000;
+static int agentInputs = 8;
+vector<int> stepsSinceLastFood;
 vector<vector<int>> foods;
 vector<vector<body_part>> snakes;
 NEAT neat;
@@ -43,8 +43,6 @@ void replaceFood(vector<int> &food)
 }
 void reset()
 {
-    std::cout << "penis resert" << std::endl;
-    frames = 0;
     snakes.clear();
     body_part temp = body_part();
     temp.x = 0;
@@ -64,6 +62,19 @@ void timer(int v)
 {
     glutPostRedisplay();
     glutTimerFunc(1000 / FPS, timer, v);
+}
+void keyboard(unsigned char key, int x, int y){
+    if(key == 'k')
+        for(int i = 0; i < amountOfAgents; i++)
+            neat.killAgent(i);
+}
+bool bodyNearHead(vector<body_part> snake, vector<int> steps){
+    body_part head = snake[0];
+    vector<int> checkingPos = {head.x + steps[0]*squareSize, head.y + steps[1]*squareSize};
+    for(body_part b : snake)
+        if(b.x == checkingPos[0] && b.y == checkingPos[1])
+            return true;
+    return false;
 }
 
 /* drawing methods */
@@ -93,19 +104,20 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
 {
     // inputs
     body_part *head = &pSnake[0];
-    double leftFood = 0;
-    if (food[1] == head->y && food[0] < head->x)
-        leftFood = 1;
-    double rightFood = 0;
-    if (food[1] == head->y && food[0] > head->x)
-        rightFood = 1;
-    double aboveFood = 0;
-    if (food[1] > head->y && food[0] == head->x)
-        aboveFood = 1;
-    double underFood = 0;
-    if (food[1] < head->y && food[0] == head->x)
-        underFood = 1;
-    vector<double> output = neat.getSingleAgentOutput(index, {leftFood, rightFood, aboveFood, underFood});
+    double leftFood = food[1] == head->y && food[0]  < head->x ? 1 : 0;
+    double rightFood =food[1] == head->y && food[0]  > head->x ? 1 : 0;
+    double aboveFood = food[1] > head->y && food[0] == head->x ? 1 : 0;
+    double underFood = food[1] < head->y && food[0] == head->x ? 1 : 0;
+    /* there is a wall next to the snake if 
+    * a : it has reached the end of the screen
+    * b : there is a body-part of the snake
+    * c : it was on that square in the last frame (to prevent "jiggle-ing")
+    */
+    double leftWall = head->x == -WINDOW_WIDTH || bodyNearHead(pSnake, {-1, 0}) || head->xvel == 1 ? 1 : 0;
+    double rightWall = head->x == WINDOW_WIDTH-squareSize || bodyNearHead(pSnake, {1, 0}) || head->xvel == -1 ? 1 : 0;
+    double topWall = head->y == WINDOW_HEIGHT - squareSize || bodyNearHead(pSnake, {0, 1}) || head->yvel == -1 ? 1 : 0;
+    double underWall = head->y == -WINDOW_HEIGHT || bodyNearHead(pSnake, {0, -1}) || head->yvel == 1 ? 1 : 0;
+    vector<double> output = neat.getSingleAgentOutput(index, {leftFood, rightFood, aboveFood, underFood, leftWall, rightWall, topWall, underWall});
     int indexOfLargest = 0;
     double valueOfLargest = 0.0;
     for (int i = 0; i < output.size(); i++)
@@ -119,18 +131,30 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     switch (indexOfLargest)
     {
     case 0:
+        /* up */
+        if (head->yvel == -1)
+            neat.killAgent(index);
         head->xvel = 0;
         head->yvel = 1;
         break;
     case 1:
+        /* left */
+        if (head->xvel == 1)
+            neat.killAgent(index);
         head->xvel = -1;
         head->yvel = 0;
         break;
     case 2:
+        /* down */
+        if (head->yvel == 1)
+            neat.killAgent(index);
         head->xvel = 0;
         head->yvel = -1;
         break;
     case 3:
+        /* right */
+        if (head->xvel == -1)
+            neat.killAgent(index);
         head->xvel = 1;
         head->yvel = 0;
         break;
@@ -148,7 +172,8 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
         pSnake.push_back(temp);
         neat.increaseScore(index);
         replaceFood(food);
-    }
+        stepsSinceLastFood[index] = 0;
+    }else{stepsSinceLastFood[index]++;}
     // update snakes positions
     for (int i = pSnake.size() - 1; i > 0; i--)
     {
@@ -165,6 +190,8 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
         if (head->x == pSnake[i].x && head->y == pSnake[i].y)
             neat.killAgent(index);
     }
+    if(stepsSinceLastFood[index] >= maxStepsWithoutFood)
+        neat.killAgent(index);
 }
 
 /* main method */
@@ -172,7 +199,7 @@ void display()
 {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if (false/*neat.allDead()/* || frames >= forceDeathFrames*/)
+    if (neat.allDead())
         reset();
 
     for (int agentIndex = 0; agentIndex < amountOfAgents; agentIndex++)
@@ -190,7 +217,6 @@ void display()
         drawSnake(snakes[agentIndex]);
     }
 
-    //frames++;
     glutSwapBuffers();
     glFlush();
 }
@@ -198,7 +224,7 @@ void display()
 int main(int argc, char **argv)
 {
     /* enviroment initialization */
-    neat = NEAT(forceDeathScore);
+    neat = NEAT(forceDeathScore, 0.95);  // !important! : mutationrate is a very impactfull parameter!!!
     neat.initializeAgents(amountOfAgents, agentInputs, networkTopology);
     vector<body_part> snake;
     body_part temp = body_part();
@@ -211,6 +237,7 @@ int main(int argc, char **argv)
     {
         snakes.push_back(snake);
         foods.push_back({0, 0});
+        stepsSinceLastFood.push_back(0);
         replaceFood(foods.back());
     }
 
@@ -222,6 +249,7 @@ int main(int argc, char **argv)
 
     glutDisplayFunc(display);
     glutTimerFunc(100, timer, 0);
+    glutKeyboardFunc(keyboard);
 
     glutMainLoop();
     return 0;
