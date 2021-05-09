@@ -104,10 +104,10 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
 {
     // inputs
     body_part *head = &pSnake[0];
-    double leftFood = food[1] == head->y && food[0]  < head->x ? 1 : 0;
-    double rightFood =food[1] == head->y && food[0]  > head->x ? 1 : 0;
-    double aboveFood = food[1] > head->y && food[0] == head->x ? 1 : 0;
-    double underFood = food[1] < head->y && food[0] == head->x ? 1 : 0;
+    double leftFood = food[1] == head->y && food[0]  < head->x ? (head->x - food[0])/(WINDOW_WIDTH*2)  : 0;
+    double rightFood =food[1] == head->y && food[0]  > head->x ? (food[0] - head->x)/(WINDOW_WIDTH*2)  : 0;
+    double aboveFood = food[1] > head->y && food[0] == head->x ? (food[0] - head->y)/(WINDOW_HEIGHT*2) : 0;
+    double underFood = food[1] < head->y && food[0] == head->x ? (head->y - food[0])/(WINDOW_HEIGHT*2) : 0;
     /* there is a wall next to the snake if 
     * a : it has reached the end of the screen
     * b : there is a body-part of the snake
