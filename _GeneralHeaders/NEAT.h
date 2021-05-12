@@ -93,13 +93,35 @@ vector<vector<double>> NEAT::getOutput(vector<vector<double>> inputs)
     return outputs;
 }
 
+vector<Agent> sortAgents(vector<Agent> agents){
+    if(agents.size() == 0 || agents.size() == 1 || agents.size() == 2)
+        return agents;
+    vector<Agent> res;
+
+    int pivot = agents.size() / 2;
+    Agent p = agents[pivot];
+    vector<Agent> left;
+    vector<Agent> right;
+    for(Agent &a : agents)
+        if(a.getScore() > p.getScore())
+            left.push_back(a);
+        else if(a.getScore() < p.getScore())
+            right.push_back(a);
+    for(Agent &a : sortAgents(left))
+        res.push_back(a);
+    res.push_back(agents[pivot]);
+    for(Agent &a : sortAgents(right))
+        res.push_back(a);
+    return res;
+}
+
 void NEAT::generateNewGeneration()
 {
     deadAgents = 0;
     _allDead = false;
     /* sort all agents by score */
-    vector<Agent> tempAgents = agents;
-    bool switched = true;
+    vector<Agent> tempAgents = sortAgents(agents);
+    /*bool switched = true;
     while (switched)
     {
         switched = false;
@@ -113,7 +135,7 @@ void NEAT::generateNewGeneration()
                 switched = true;
             }
         }
-    }
+    }*/
     std::cout << "Generation : " << generation << " | Score : " << tempAgents[0].getScore() << std::endl;
     generation++;
 
