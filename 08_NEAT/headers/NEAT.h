@@ -154,8 +154,11 @@ vector<double> NEAT::generateNewGene(Agent agent1, Agent agent2)
     vector<double> gene2 = agent2.getGene();
 
     /* just testing */
-    double prob1 = 0.5;
-    double prob2 = 0.5;
+    //double prob1 = 0.5;
+    //double prob2 = 0.5;
+    double total = agent1.getScore() + agent2.getScore();
+    double prob1 = agent1.getScore() / total;
+    double prob2 = agent2.getScore() / total;
 
     vector<double> res;
     for (int i = 0; i < gene1.size(); i++)

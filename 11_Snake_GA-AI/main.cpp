@@ -24,8 +24,8 @@ static int FPS = 100;
 static int squareSize = 60;
 static int forceDeathScore = 100;
 static int maxStepsWithoutFood = 300;
-static vector<int> networkTopology = {16, 8, 4};
-static int amountOfAgents = 100;
+static vector<int> networkTopology = {20, 10, 4};
+static int amountOfAgents = 500;
 static int agentInputs = 10;
 vector<int> stepsSinceLastFood;
 vector<vector<int>> foods;
@@ -113,10 +113,10 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     * b : there is a body-part of the snake
     * c : it was on that square in the last frame (to prevent "jiggle-ing")
     */
-    double leftWall  = head->x == -WINDOW_WIDTH             || bodyNearHead(pSnake, {-1, 0})/* || head->xvel ==  1 */? 1.0 : 0.0;
-    double rightWall = head->x == WINDOW_WIDTH-squareSize   || bodyNearHead(pSnake, { 1, 0})/* || head->xvel == -1 */? 1.0 : 0.0;
-    double topWall   = head->y == WINDOW_HEIGHT - squareSize|| bodyNearHead(pSnake, { 0, 1})/* || head->yvel == -1 */? 1.0 : 0.0;
-    double underWall = head->y == -WINDOW_HEIGHT            || bodyNearHead(pSnake, { 0,-1})/* || head->yvel ==  1 */? 1.0 : 0.0;
+    double leftWall  = head->x == -WINDOW_WIDTH             || bodyNearHead(pSnake, {-1, 0}) || head->xvel ==  1 ? 1.0 : 0.0;
+    double rightWall = head->x == WINDOW_WIDTH-squareSize   || bodyNearHead(pSnake, { 1, 0}) || head->xvel == -1 ? 1.0 : 0.0;
+    double topWall   = head->y == WINDOW_HEIGHT - squareSize|| bodyNearHead(pSnake, { 0, 1}) || head->yvel == -1 ? 1.0 : 0.0;
+    double underWall = head->y == -WINDOW_HEIGHT            || bodyNearHead(pSnake, { 0,-1}) || head->yvel ==  1 ? 1.0 : 0.0;
     vector<double> output = neat.getSingleAgentOutput(index, {leftFood, rightFood, aboveFood, underFood, leftWall, rightWall, topWall, underWall, head->xvel*1.0, head->yvel*1.0});
     int indexOfLargest = 0;
     double valueOfLargest = 0.0;
@@ -225,8 +225,9 @@ void display()
 
 int main(int argc, char **argv)
 {
+    srand((unsigned int)time(NULL));
     /* enviroment initialization */
-    neat = NEAT(forceDeathScore, 0.95);  // !important! : mutationrate is a very impactfull parameter!!!
+    neat = NEAT(forceDeathScore, 0.98);  // !important! : mutationrate is a very impactfull parameter!!!
     neat.initializeAgents(amountOfAgents, agentInputs, networkTopology);
     vector<body_part> snake;
     body_part temp = body_part();
