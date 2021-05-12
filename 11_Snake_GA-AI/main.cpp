@@ -112,10 +112,10 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     * b : there is a body-part of the snake
     * c : it was on that square in the last frame (to prevent "jiggle-ing")
     */
-    double leftWall  = head->x == -WINDOW_WIDTH             || bodyNearHead(pSnake, {-1, 0})/* || head->xvel ==  1 */? 1 : 0;
-    double rightWall = head->x == WINDOW_WIDTH-squareSize   || bodyNearHead(pSnake, { 1, 0})/* || head->xvel == -1 */? 1 : 0;
-    double topWall   = head->y == WINDOW_HEIGHT - squareSize|| bodyNearHead(pSnake, { 0, 1})/* || head->yvel == -1 */? 1 : 0;
-    double underWall = head->y == -WINDOW_HEIGHT            || bodyNearHead(pSnake, { 0,-1})/* || head->yvel ==  1 */? 1 : 0;
+    double leftWall  = head->x == -WINDOW_WIDTH             || bodyNearHead(pSnake, {-1, 0}) || head->xvel ==  1 ? 1 : 0;
+    double rightWall = head->x == WINDOW_WIDTH-squareSize   || bodyNearHead(pSnake, { 1, 0}) || head->xvel == -1 ? 1 : 0;
+    double topWall   = head->y == WINDOW_HEIGHT - squareSize|| bodyNearHead(pSnake, { 0, 1}) || head->yvel == -1 ? 1 : 0;
+    double underWall = head->y == -WINDOW_HEIGHT            || bodyNearHead(pSnake, { 0,-1}) || head->yvel ==  1 ? 1 : 0;
     vector<double> output = neat.getSingleAgentOutput(index, {leftFood, rightFood, aboveFood, underFood, leftWall, rightWall, topWall, underWall});
     int indexOfLargest = 0;
     double valueOfLargest = 0.0;
@@ -131,29 +131,29 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     {
     case 0:
         /* up */
-        //if (head->yvel == -1)
-        //    neat.killAgent(index);
+        if (head->yvel == -1)
+            neat.killAgent(index);
         head->xvel = 0;
         head->yvel = 1;
         break;
     case 1:
         /* left */
-        //if (head->xvel == 1)
-        //    neat.killAgent(index);
+        if (head->xvel == 1)
+            neat.killAgent(index);
         head->xvel = -1;
         head->yvel = 0;
         break;
     case 2:
         /* down */
-        //if (head->yvel == 1)
-        //    neat.killAgent(index);
+        if (head->yvel == 1)
+            neat.killAgent(index);
         head->xvel = 0;
         head->yvel = -1;
         break;
     case 3:
         /* right */
-        //if (head->xvel == -1)
-        //    neat.killAgent(index);
+        if (head->xvel == -1)
+            neat.killAgent(index);
         head->xvel = 1;
         head->yvel = 0;
         break;
@@ -168,7 +168,7 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
         temp.y = 0;
         temp.xvel = 1;
         temp.yvel = 0;
-        /*pSnake.push_back(temp);*/
+        pSnake.push_back(temp);
         neat.increaseScore(index);
         replaceFood(food);
         stepsSinceLastFood[index] = 0;
@@ -178,8 +178,8 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     {
         pSnake[i] = pSnake[i - 1];
     }
-    /* weird error (only on linux though) */
-    if(head->xvel < -1 || head->xvel > 1 || head->yvel < -1 || head->y > 1){neat.killAgent(index);return;}
+    /* weird error */
+    if(head->xvel < -20 || head->xvel > 20 || head->yvel < -20 || head->yvel > 20){/*neat.killAgent(index);*/std::cout << "error" << head->yvel << head->xvel << std::endl;return;}
     head->x = head->x + head->xvel * squareSize;
     head->y = head->y + head->yvel * squareSize;
 
