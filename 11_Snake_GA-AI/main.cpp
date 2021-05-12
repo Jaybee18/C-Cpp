@@ -9,7 +9,6 @@
 #include "GL/gl.h"
 #include <math.h>
 #include <iostream>
-#include "../_GeneralHeaders/plist.h"
 #include "../_GeneralHeaders/NEAT.h"
 
 /* objects */
@@ -103,9 +102,10 @@ void drawFood(vector<int> food)
 void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
 {
     // inputs
-    body_part *head = &pSnake[0];
-    double leftFood = food[1] == head->y && food[0]  < head->x ? 1 : 0;
-    double rightFood =food[1] == head->y && food[0]  > head->x ? 1 : 0;
+    body_part *head = NULL;
+    head = &pSnake[0];
+    double leftFood  = food[1]== head->y && food[0]  < head->x ? 1 : 0;
+    double rightFood = food[1]== head->y && food[0]  > head->x ? 1 : 0;
     double aboveFood = food[1] > head->y && food[0] == head->x ? 1 : 0;
     double underFood = food[1] < head->y && food[0] == head->x ? 1 : 0;
     /* there is a wall next to the snake if 
@@ -113,10 +113,10 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     * b : there is a body-part of the snake
     * c : it was on that square in the last frame (to prevent "jiggle-ing")
     */
-    double leftWall = head->x == -WINDOW_WIDTH || bodyNearHead(pSnake, {-1, 0}) || head->xvel == 1 ? 1 : 0;
-    double rightWall = head->x == WINDOW_WIDTH-squareSize || bodyNearHead(pSnake, {1, 0}) || head->xvel == -1 ? 1 : 0;
-    double topWall = head->y == WINDOW_HEIGHT - squareSize || bodyNearHead(pSnake, {0, 1}) || head->yvel == -1 ? 1 : 0;
-    double underWall = head->y == -WINDOW_HEIGHT || bodyNearHead(pSnake, {0, -1}) || head->yvel == 1 ? 1 : 0;
+    double leftWall  = head->x == -WINDOW_WIDTH             || bodyNearHead(pSnake, {-1, 0})/* || head->xvel ==  1 */? 1 : 0;
+    double rightWall = head->x == WINDOW_WIDTH-squareSize   || bodyNearHead(pSnake, { 1, 0})/* || head->xvel == -1 */? 1 : 0;
+    double topWall   = head->y == WINDOW_HEIGHT - squareSize|| bodyNearHead(pSnake, { 0, 1})/* || head->yvel == -1 */? 1 : 0;
+    double underWall = head->y == -WINDOW_HEIGHT            || bodyNearHead(pSnake, { 0,-1})/* || head->yvel ==  1 */? 1 : 0;
     vector<double> output = neat.getSingleAgentOutput(index, {leftFood, rightFood, aboveFood, underFood, leftWall, rightWall, topWall, underWall});
     int indexOfLargest = 0;
     double valueOfLargest = 0.0;
@@ -132,29 +132,29 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     {
     case 0:
         /* up */
-        if (head->yvel == -1)
-            neat.killAgent(index);
+        //if (head->yvel == -1)
+        //    neat.killAgent(index);
         head->xvel = 0;
         head->yvel = 1;
         break;
     case 1:
         /* left */
-        if (head->xvel == 1)
-            neat.killAgent(index);
+        //if (head->xvel == 1)
+        //    neat.killAgent(index);
         head->xvel = -1;
         head->yvel = 0;
         break;
     case 2:
         /* down */
-        if (head->yvel == 1)
-            neat.killAgent(index);
+        //if (head->yvel == 1)
+        //    neat.killAgent(index);
         head->xvel = 0;
         head->yvel = -1;
         break;
     case 3:
         /* right */
-        if (head->xvel == -1)
-            neat.killAgent(index);
+        //if (head->xvel == -1)
+        //    neat.killAgent(index);
         head->xvel = 1;
         head->yvel = 0;
         break;
@@ -169,18 +169,20 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
         temp.y = 0;
         temp.xvel = 1;
         temp.yvel = 0;
-        pSnake.push_back(temp);
+        /*pSnake.push_back(temp);*/
         neat.increaseScore(index);
         replaceFood(food);
         stepsSinceLastFood[index] = 0;
     }else{stepsSinceLastFood[index]++;}
-    // update snakes positions
+    /* update snakes positions */
     for (int i = pSnake.size() - 1; i > 0; i--)
     {
         pSnake[i] = pSnake[i - 1];
     }
-    head->x += head->xvel * squareSize;
-    head->y += head->yvel * squareSize;
+    /* weird error (only on linux though) */
+    if(head->xvel < -1 || head->xvel > 1 || head->yvel < -1 || head->y > 1){neat.killAgent(index);return;}
+    head->x = head->x + head->xvel * squareSize;
+    head->y = head->y + head->yvel * squareSize;
 
     /* check if snake is dead */
     if (head->x < -WINDOW_WIDTH || head->x > WINDOW_WIDTH || head->y < -WINDOW_HEIGHT || head->y > WINDOW_HEIGHT)
@@ -245,7 +247,7 @@ int main(int argc, char **argv)
     glutInitDisplayMode(GLUT_SINGLE);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("OpenGL - Fappy Birb");
+    glutCreateWindow("OpenGL - Snek");
 
     glutDisplayFunc(display);
     glutTimerFunc(100, timer, 0);
