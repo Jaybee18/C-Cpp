@@ -1,3 +1,12 @@
+/*
+ * todo : 
+ * - networks are randomly generated with nodes and conenctions
+ *   -> a mutation can either generate a new connection between two random nodes
+ *      or generate a new node onto an existing connection
+ *   -> networks who just developed a new node f.e. have a kind of baby-protection
+ *      to adjust the weights of their new node so that they don't instantly die
+ */
+
 #include "Agent.h"
 #include <vector>
 
@@ -21,7 +30,7 @@ private:
     vector<Agent> generateAgentsFromGene(int noAgents, vector<double> gene);
 
 public:
-    NEAT();
+    NEAT(){};
     NEAT(double fds);
     NEAT(double fds, double mutationRate);
     void initializeAgents(int agentCount, int agentInputCount, vector<int> topology);
@@ -34,10 +43,8 @@ public:
     bool isAgentDead(int agentIndex);
     void increaseScore(int agentIndex);
     vector<double> getSingleAgentOutput(int agentIndex, vector<double> input);
-    ~NEAT();
+    ~NEAT(){};
 };
-
-NEAT::NEAT() {}
 
 NEAT::NEAT(double fds)
 {
@@ -115,27 +122,52 @@ vector<Agent> sortAgents(vector<Agent> agents){
     return res;
 }
 
+Agent selectRandomAgent(vector<Agent> agents){
+    /* get the total amount of points gathered by the last generation */
+    int allScores = 0;
+    for(Agent a : agents)
+        allScores += a.getScore();
+    double rand = randomDouble() * allScores;
+    int counter = 0;
+    while(rand > 0){
+        rand -= agents[counter].getScore();
+        counter++;
+    }
+    return agents[counter];
+}
+
+vector<Agent> selectIRandomAgents(int amount, vector<Agent> agents)
+{
+    int allScores = 0;
+    for(Agent a : agents)
+        allScores += a.getScore();
+    vector<double> rands;
+    for(int i = 0; i < amount; i++){
+        rands.push_back(randomDouble() * allScores);
+    }
+    vector<Agent> res;
+    int counter = 0;
+    while(res.size() <= amount){
+        std::cout << res.size() << amount << std::endl;
+        for(double &d : rands){
+            if(d <= 0.0)
+                continue;
+            d -= agents[counter].getScore() * 1.0;
+            if(d <= 0.0)
+                res.push_back(agents[counter]);
+        }
+        counter++;
+    }
+    return res;
+}
+
 void NEAT::generateNewGeneration()
 {
     deadAgents = 0;
     _allDead = false;
     /* sort all agents by score */
     vector<Agent> tempAgents = sortAgents(agents);
-    /*bool switched = true;
-    while (switched)
-    {
-        switched = false;
-        for (int i = 0; i < tempAgents.size() - 1; i++)
-        {
-            if (tempAgents[i].getScore() < tempAgents[i + 1].getScore())
-            {
-                Agent temp = tempAgents[i];
-                tempAgents[i] = tempAgents[i + 1];
-                tempAgents[i + 1] = temp;
-                switched = true;
-            }
-        }
-    }*/
+
     std::cout << "Generation : " << generation << " | Score : " << tempAgents[0].getScore() << std::endl;
     generation++;
 
@@ -158,9 +190,20 @@ void NEAT::generateNewGeneration()
     }
 
     /* generate the rest of the new generation */
-    vector<double> newGene = generateNewGene(elite[0], elite[1]);
+    int amountOfChildrenPerPair = 2;
     iterations = amount_of_agents - iterations;
-    vector<Agent> newGen = generateAgentsFromGene(iterations, newGene);
+    int numberOfPairs = iterations / amountOfChildrenPerPair;
+    vector<Agent> newGen;
+    vector<Agent> randomAgents = selectIRandomAgents(numberOfPairs, agents);
+    std::cout << "penis" << std::endl;
+
+    for(int i = 0; i < numberOfPairs; i+=2)
+    {
+        Agent a1 = randomAgents[i], a2 = randomAgents[i+1];
+        vector<double> tempGene = generateNewGene(a1, a2);
+        for(Agent a : generateAgentsFromGene(amountOfChildrenPerPair, tempGene))
+            newGen.push_back(a);
+    }
     for (Agent a : elite)
         newGen.push_back(a);
 
@@ -181,10 +224,6 @@ void NEAT::killAgent(int agentIndex)
 bool NEAT::allDead()
 {
     return _allDead;
-}
-
-NEAT::~NEAT()
-{
 }
 
 vector<double> NEAT::generateNewGene(Agent agent1, Agent agent2)
