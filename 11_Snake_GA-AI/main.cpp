@@ -173,6 +173,7 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
         neat.increaseScore(index);
         replaceFood(food);
         stepsSinceLastFood[index] = 0;
+        head = &pSnake[0]; // refresh the head pointer, since the object it points to has been modified !!!!!!!!!!!!!!!!!!!!!!!!
     }else{stepsSinceLastFood[index]++;}
     /* update snakes positions */
     for (int i = pSnake.size() - 1; i > 0; i--)
@@ -180,7 +181,7 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
         pSnake[i] = pSnake[i - 1];
     }
     /* weird error */
-    if(head->xvel < -20 || head->xvel > 20 || head->yvel < -20 || head->yvel > 20){/*neat.killAgent(index);*/std::cout << "error" << head->yvel << head->xvel << std::endl;return;}
+    if(head->xvel < -1 || head->xvel > 1 || head->yvel < -1 || head->yvel > 1){neat.killAgent(index);std::cout << "error" << head->yvel << head->xvel << std::endl;return;}
     head->x = head->x + head->xvel * squareSize;
     head->y = head->y + head->yvel * squareSize;
 
