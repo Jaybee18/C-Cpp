@@ -9,8 +9,11 @@
 
 #include "Agent.h"
 #include <vector>
+#include <iostream>
 
 using std::vector;
+using std::cout;
+using std::endl;
 
 class NEAT
 {
@@ -105,28 +108,31 @@ vector<vector<double>> NEAT::getOutput(vector<vector<double>> inputs)
 }
 
 vector<Agent> sortAgents(vector<Agent> agents){
-    // todo : rework
-    if(agents.size() == 0 || agents.size() == 1)
+    if(agents.size() < 2)
         return agents;
     
     vector<Agent> res;
-    int pivot = agents.size() / 2;
-    Agent p = agents[pivot];
-    agents.erase(agents.begin()+pivot-1);
     vector<Agent> left;
     vector<Agent> right;
+    int pivot = agents.size()-1;
 
-    for(Agent a : agents)
-        if(a.getScore() > p.getScore())
-            left.push_back(a);
-        else/* if(a.getScore() < p.getScore())*/
-            right.push_back(a);
+    for(int i = 0; i < agents.size(); i++){
+        if(i == pivot)
+            continue;
+        if(agents[i].getScore() > agents[pivot].getScore()){
+            left.push_back(agents[i]);// cout << "kleiner" << endl;
+        }else/* if(a.getScore() < p.getScore())*/
+            right.push_back(agents[i]);
+    }
     
-    for(Agent a : sortAgents(left))
-        res.push_back(a);
-    res.push_back(p);
-    for(Agent a : sortAgents(right))
-        res.push_back(a);
+    vector<Agent> sortedLeft = sortAgents(left);   
+    vector<Agent> sortedRight = sortAgents(right);
+
+    for(int i = 0; i < sortedLeft.size(); i++)
+        res.push_back(sortedLeft[i]);
+    res.push_back(agents[pivot]);
+    for(int i = 0; i < sortedRight.size(); i++)
+        res.push_back(sortedRight[i]);
     
     return res;
 }
@@ -178,7 +184,7 @@ void NEAT::generateNewGeneration()
     _allDead = false;
     /* sort all agents by score */
     vector<Agent> tempAgents = sortAgents(agents);
-    std::cout << "sorted agents" << std::endl;
+    std::cout << "sorted agents" << tempAgents[0].getScore() << std::endl;
 
     std::cout << "Generation : " << generation << " | Score : " << tempAgents[0].getScore() << std::endl;
     generation++;
@@ -212,7 +218,7 @@ void NEAT::generateNewGeneration()
     std::cout << "selected random agents to mate" << std::endl;
 
     std::cout << numberOfPairs*2 << " // " << agents.size() << std::endl;
-    for(int i = 0; i < numberOfPairs*2-2; i+=2)
+    for(int i = 0; i < numberOfPairs*2; i+=2)
     {
         Agent a1 = randomAgents[i], a2 = randomAgents[i+1];
         vector<double> tempGene = generateNewGene(a1, a2);
