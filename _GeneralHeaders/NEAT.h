@@ -107,21 +107,25 @@ vector<vector<double>> NEAT::getOutput(vector<vector<double>> inputs)
     return outputs;
 }
 
-vector<Agent> sortAgents(vector<Agent> agents){
+/*vector<Agent> sortAgentsRek(vector<Agent> agents){
+    // sorting with objects like Agent takes too long!
+    // instead create a list with just the scores as integers, sort it,
+    // and then iterate through it while removing an agent from the agents
+    // list when his score shows up
     if(agents.size() < 2)
         return agents;
     
     vector<Agent> res;
     vector<Agent> left;
     vector<Agent> right;
-    int pivot = agents.size()-1;
+    int pivot = agents.size()/2;
 
     for(int i = 0; i < agents.size(); i++){
         if(i == pivot)
             continue;
         if(agents[i].getScore() > agents[pivot].getScore()){
             left.push_back(agents[i]);// cout << "kleiner" << endl;
-        }else/* if(a.getScore() < p.getScore())*/
+        }else/* if(a.getScore() < p.getScore())
             right.push_back(agents[i]);
     }
     
@@ -134,6 +138,63 @@ vector<Agent> sortAgents(vector<Agent> agents){
     for(int i = 0; i < sortedRight.size(); i++)
         res.push_back(sortedRight[i]);
     
+    return res;
+}*/
+vector<int> sort(vector<int> liste){
+    if(liste.size() < 2)
+        return liste;
+    
+    vector<int> res;
+    vector<int> left;
+    vector<int> right;
+    int pivot = liste.size()/2;
+
+    for(int i = 0; i < liste.size(); i++){
+        if(i == pivot)
+            continue;
+        if(liste[i] > liste[pivot]){
+            left.push_back(liste[i]);
+        }else
+            right.push_back(liste[i]);
+    }
+    
+    vector<int> sortedLeft = sort(left);   
+    vector<int> sortedRight = sort(right);
+
+    for(int i = 0; i < sortedLeft.size(); i++)
+        res.push_back(sortedLeft[i]);
+    res.push_back(liste[pivot]);
+    for(int i = 0; i < sortedRight.size(); i++)
+        res.push_back(sortedRight[i]);
+    
+    return res;
+}
+
+vector<Agent> sortAgents(vector<Agent> agents){
+    vector<Agent> res;
+
+    /* extract only the scores from all agents,
+     * because sorting integers is way faster than
+     * sorting Agent objects */
+    vector<int> scores;
+    for(Agent a : agents)
+        scores.push_back(a.getScore());
+    
+    scores = sort(scores);
+
+    /* assign the agents back to their scores */
+    for(int i = 0; i < scores.size(); i++)
+    {
+        int score = scores[i];
+        for(int j = 0; j < agents.size(); j++){
+            if(agents[j].getScore() == score){
+                res.push_back(agents[j]);
+                agents.erase(agents.begin() + j);
+                break;
+            }
+        }
+    }
+
     return res;
 }
 
@@ -163,7 +224,6 @@ vector<Agent> selectIRandomAgents(int amount, vector<Agent> agents)
     vector<Agent> res;
     int counter = 0;
     while(res.size() <= amount){
-        //std::cout << res.size() << " // " << amount << std::endl;
         if(counter >= agents.size())
             break;
         for(double &d : rands){
@@ -184,14 +244,14 @@ void NEAT::generateNewGeneration()
     _allDead = false;
     /* sort all agents by score */
     vector<Agent> tempAgents = sortAgents(agents);
-    std::cout << "sorted agents" << tempAgents[0].getScore() << std::endl;
+    //std::cout << "sorted agents" << tempAgents[0].getScore() << std::endl;
 
     std::cout << "Generation : " << generation << " | Score : " << tempAgents[0].getScore() << std::endl;
     generation++;
 
     /* isolate the elite */
     int iterations = tempAgents.size() * elitePercent;
-    std::cout << iterations << std::endl;
+    //std::cout << iterations << std::endl;
     vector<Agent> elite;
     if (iterations < 2)
     {
@@ -207,7 +267,7 @@ void NEAT::generateNewGeneration()
             elite.push_back(tempAgents[i]);
         }
     }
-    std::cout << "selected elite" << std::endl;
+    //std::cout << "selected elite" << std::endl;
 
     /* generate the rest of the new generation */
     int amountOfChildrenPerPair = 2;
@@ -215,9 +275,9 @@ void NEAT::generateNewGeneration()
     int numberOfPairs = iterations / amountOfChildrenPerPair;
     vector<Agent> newGen;
     vector<Agent> randomAgents = selectIRandomAgents(numberOfPairs*2, agents);
-    std::cout << "selected random agents to mate" << std::endl;
+    //std::cout << "selected random agents to mate" << std::endl;
 
-    std::cout << numberOfPairs*2 << " // " << agents.size() << std::endl;
+    //std::cout << numberOfPairs*2 << " // " << agents.size() << std::endl;
     for(int i = 0; i < numberOfPairs*2; i+=2)
     {
         Agent a1 = randomAgents[i], a2 = randomAgents[i+1];
@@ -225,13 +285,13 @@ void NEAT::generateNewGeneration()
         for(Agent a : generateAgentsFromGene(amountOfChildrenPerPair, tempGene))
             newGen.push_back(a);
     }
-    std::cout << "size of new gen " << newGen.size() << std::endl;
+    //std::cout << "size of new gen " << newGen.size() << std::endl;
     for (Agent a : elite)
         newGen.push_back(a);
 
     /* replace the old generation with the newer */
     agents = newGen;
-    std::cout << "reached end of generation function " << agents.size() << std::endl;
+    //std::cout << "reached end of generation function " << agents.size() << std::endl;
 }
 
 void NEAT::killAgent(int agentIndex)
