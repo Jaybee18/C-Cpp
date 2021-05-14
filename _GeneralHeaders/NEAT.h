@@ -53,6 +53,7 @@ NEAT::NEAT(double fds)
 {
     srand((unsigned int)time(NULL));
     forceDeathScore = fds;
+    generation = 0;
     deadAgents = 0;
     _allDead = false;
     elitePercent = 0.1;
@@ -63,6 +64,7 @@ NEAT::NEAT(double fds, double mutationRate)
 {
     srand((unsigned int)time(NULL));
     forceDeathScore = fds;
+    generation = 0;
     deadAgents = 0;
     _allDead = false;
     elitePercent = 0.1;
