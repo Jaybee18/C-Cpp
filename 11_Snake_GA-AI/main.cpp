@@ -21,7 +21,7 @@ struct body_part
 /* general constants/variables */
 static int WINDOW_WIDTH = 600, WINDOW_HEIGHT = 600;
 static int FPS = 100;
-static int squareSize = 60;
+static int squareSize = 40;
 static int forceDeathScore = 100;
 static int maxStepsWithoutFood = 300;
 static vector<int> networkTopology = {20, 10, 4};
@@ -74,6 +74,18 @@ bool bodyNearHead(vector<body_part> snake, vector<int> steps){
         if(b.x == checkingPos[0] && b.y == checkingPos[1])
             return true;
     return false;
+}
+double bodyNearHead2(vector<body_part> snake, vector<int> steps){
+    body_part head = snake[0];
+    for(int i = 0; i < WINDOW_WIDTH/squareSize + 1; i++){
+        vector<int> currentPos = {head.x + steps[0]*squareSize, head.y + steps[1]*squareSize};
+        for(body_part b : snake)
+        {
+            if(b.x == currentPos[0] && b.y == currentPos[1])
+                return abs(sqrt(pow(head.x-currentPos[0], 2) + pow(head.y - currentPos[1], 2)));
+        }
+    }
+    return 1.0;
 }
 
 /* drawing methods */
@@ -180,8 +192,6 @@ void updateSnake(vector<body_part> &pSnake, vector<int> &food, int index)
     {
         pSnake[i] = pSnake[i - 1];
     }
-    /* weird error */
-    if(head->xvel < -1 || head->xvel > 1 || head->yvel < -1 || head->yvel > 1){neat.killAgent(index);std::cout << "error" << head->yvel << head->xvel << std::endl;return;}
     head->x = head->x + head->xvel * squareSize;
     head->y = head->y + head->yvel * squareSize;
 
@@ -249,7 +259,7 @@ int main(int argc, char **argv)
     glutInitDisplayMode(GLUT_SINGLE);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("OpenGL - Snek");
+    glutCreateWindow("Neuro Evolution of Augumenting Topologies - Snek");
 
     glutDisplayFunc(display);
     glutTimerFunc(100, timer, 0);

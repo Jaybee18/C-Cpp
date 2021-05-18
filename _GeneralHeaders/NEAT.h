@@ -246,14 +246,12 @@ void NEAT::generateNewGeneration()
     _allDead = false;
     /* sort all agents by score */
     vector<Agent> tempAgents = sortAgents(agents);
-    //std::cout << "sorted agents" << tempAgents[0].getScore() << std::endl;
 
     std::cout << "Generation : " << generation << " | Score : " << tempAgents[0].getScore() << std::endl;
     generation++;
 
     /* isolate the elite */
     int iterations = tempAgents.size() * elitePercent;
-    //std::cout << iterations << std::endl;
     vector<Agent> elite;
     if (iterations < 2)
     {
@@ -269,7 +267,6 @@ void NEAT::generateNewGeneration()
             elite.push_back(tempAgents[i]);
         }
     }
-    //std::cout << "selected elite" << std::endl;
 
     /* generate the rest of the new generation */
     int amountOfChildrenPerPair = 2;
@@ -277,9 +274,7 @@ void NEAT::generateNewGeneration()
     int numberOfPairs = iterations / amountOfChildrenPerPair;
     vector<Agent> newGen;
     vector<Agent> randomAgents = selectIRandomAgents(numberOfPairs*2, agents);
-    //std::cout << "selected random agents to mate" << std::endl;
 
-    //std::cout << numberOfPairs*2 << " // " << agents.size() << std::endl;
     for(int i = 0; i < numberOfPairs*2; i+=2)
     {
         Agent a1 = randomAgents[i], a2 = randomAgents[i+1];
@@ -287,13 +282,11 @@ void NEAT::generateNewGeneration()
         for(Agent a : generateAgentsFromGene(amountOfChildrenPerPair, tempGene))
             newGen.push_back(a);
     }
-    //std::cout << "size of new gen " << newGen.size() << std::endl;
     for (Agent a : elite)
         newGen.push_back(a);
 
     /* replace the old generation with the newer */
     agents = newGen;
-    //std::cout << "reached end of generation function " << agents.size() << std::endl;
 }
 
 void NEAT::killAgent(int agentIndex)
@@ -317,8 +310,8 @@ vector<double> NEAT::generateNewGene(Agent agent1, Agent agent2)
     vector<double> gene2 = agent2.getGene();
 
     /* just testing */
-    double prob1 = 0.5;
-    double prob2 = 0.5;
+    double prob1 = agent1.getScore();
+    double prob2 = agent2.getScore();
 
     vector<double> res;
     for (int i = 0; i < gene1.size(); i++)
